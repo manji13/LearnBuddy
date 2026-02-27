@@ -2,21 +2,22 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./db');
+const authRoutes = require('./Routes/User Management/UserRoute.js');
 
-// Load environment variables from .env file
 dotenv.config();
 
-// Initialize the Express app
 const app = express();
 
 // Connect to the database
 connectDB();
 
 // Middleware
-app.use(cors()); // Allows your React frontend to communicate with the backend
-app.use(express.json()); // Parses incoming JSON data from HTTP requests
+app.use(cors()); 
+app.use(express.json()); 
 
-// A simple test route to verify the server is working
+// API Routes
+app.use('/api/auth', authRoutes);
+
 app.get('/', (req, res) => {
   res.send('LearnBuddy API is running...');
 });
