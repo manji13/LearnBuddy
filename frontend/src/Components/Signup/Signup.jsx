@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import logo from '../../assets/learnbuddy-logo.jpg';
-// Make sure this file exists in your assets folder
 import topBgImage from '../../assets/Signup_img.jpg';
 
 const Signup = () => {
@@ -16,9 +15,11 @@ const Signup = () => {
     phoneNumber: '',
     campus: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    profileImage: '' // NEW: Added to state
   });
 
+  const [imagePreview, setImagePreview] = useState(null); // State for image preview
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -32,6 +33,19 @@ const Signup = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // NEW: Handle File Upload & Convert to Base64
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setFormData({ ...formData, profileImage: reader.result });
+        setImagePreview(reader.result);
+      };
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -52,7 +66,8 @@ const Signup = () => {
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           campus: formData.campus,
-          password: formData.password
+          password: formData.password,
+          profileImage: formData.profileImage // Include image payload
         })
       });
 
@@ -74,9 +89,7 @@ const Signup = () => {
   };
 
   return (
-    // High-Fidelity UI Container
     <div className="h-screen w-full bg-slate-50 relative flex items-center justify-center p-4 font-sans text-slate-800 overflow-hidden">
-
       <Link
         to="/"
         className="absolute top-6 left-6 z-20 bg-white/70 backdrop-blur-md hover:bg-white text-slate-700 hover:text-indigo-600 p-2.5 rounded-full shadow-lg transition-all transform hover:scale-110"
@@ -101,28 +114,23 @@ const Signup = () => {
         </div>
       )}
 
-      {/* HD Background Rendering - Fixed stretching issue */}
+      {/* HD Background Rendering */}
       <div className="absolute top-0 left-0 w-full h-[50dvh] z-0">
         <img
           src={topBgImage}
           alt="Campus Background"
-          // Uses object-cover with top alignment to preserve quality without stretching
           className="w-full h-full object-cover object-top"
         />
-        {/* Quality Blend Gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-slate-50"></div>
       </div>
 
       {/* Deep Shadow Registration Card */}
       <div
         className={`z-10 w-full max-w-lg bg-white rounded-3xl p-7 sm:p-9 relative overflow-hidden transition-all duration-1000 ease-out transform
-          /* multi-layered deep shadow for high-fidelity appearance */
           shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12),0_15px_30px_-10px_rgba(0,0,0,0.08)]
-          /* Slide-up Mount Animation */
           ${isMounted ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'}
         `}
       >
-        {/* Success Animation Overlay */}
         {isSuccess && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
             <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mb-4 shadow-xl animate-bounce">
@@ -137,7 +145,21 @@ const Signup = () => {
 
         {/* Form Header */}
         <div className="text-center mb-6">
-          <img src={logo} alt="LearnBuddy" className="w-14 h-14 mx-auto rounded-full border-2 border-indigo-100 mb-4 shadow-md" />
+          <div className="relative inline-block">
+            <img 
+              src={imagePreview || logo} 
+              alt="Profile Preview" 
+              className="w-16 h-16 mx-auto rounded-full border-2 border-indigo-100 mb-2 shadow-md object-cover" 
+            />
+            {/* Custom File Input Button floating over image */}
+            <label className="absolute bottom-2 -right-2 bg-indigo-600 hover:bg-teal-500 text-white p-1.5 rounded-full cursor-pointer shadow-lg transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+            </label>
+          </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 to-teal-600 bg-clip-text text-transparent">Create an Account</h2>
           <p className="text-slate-600 text-sm mt-1.5 font-medium">Join LearnBuddy today</p>
         </div>

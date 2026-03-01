@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true },
   campus: { type: String, required: true },
   password: { type: String, required: true },
+  profileImage: { type: String, default: "" }, // NEW: Added profile image field
   role: { 
     type: String, 
     enum: ['Student', 'Employee', 'Admin'], 
@@ -15,7 +16,6 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Hash password before saving
-// Removed the 'next' parameter since this is an async function
 userSchema.pre('save', async function() {
   if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10);
