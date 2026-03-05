@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import ReCAPTCHA from "react-google-recaptcha"; // NEW: Imported ReCAPTCHA
 import logo from '../../assets/learnbuddy-logo.jpg';
 import topBgImage from '../../assets/Signup_img.jpg';
 
@@ -16,11 +17,12 @@ const Signup = () => {
     campus: '',
     password: '',
     confirmPassword: '',
-    profileImage: '' // NEW: Added to state
+    profileImage: ''
   });
 
-  const [imagePreview, setImagePreview] = useState(null); // State for image preview
+  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
+  const [captchaToken, setCaptchaToken] = useState(null); // NEW: CAPTCHA state
 
   useEffect(() => {
     const loadingTimer = setTimeout(() => {
@@ -35,7 +37,6 @@ const Signup = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // NEW: Handle File Upload & Convert to Base64
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -57,6 +58,12 @@ const Signup = () => {
       return;
     }
 
+    // NEW: Check if CAPTCHA is completed
+    if (!captchaToken) {
+      setError('Please complete the CAPTCHA verification.');
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
@@ -67,7 +74,8 @@ const Signup = () => {
           phoneNumber: formData.phoneNumber,
           campus: formData.campus,
           password: formData.password,
-          profileImage: formData.profileImage // Include image payload
+          profileImage: formData.profileImage,
+          captchaToken: captchaToken // NEW: Send token to backend
         })
       });
 
@@ -151,7 +159,6 @@ const Signup = () => {
               alt="Profile Preview" 
               className="w-16 h-16 mx-auto rounded-full border-2 border-indigo-100 mb-2 shadow-md object-cover" 
             />
-            {/* Custom File Input Button floating over image */}
             <label className="absolute bottom-2 -right-2 bg-indigo-600 hover:bg-teal-500 text-white p-1.5 rounded-full cursor-pointer shadow-lg transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -166,7 +173,6 @@ const Signup = () => {
 
         {error && <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-sm text-center font-medium shadow-inner">{error}</div>}
 
-        {/* Compact Form Layout */}
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
             <div>
@@ -201,7 +207,15 @@ const Signup = () => {
             </div>
           </div>
 
-          <button type="submit" className="w-full mt-5 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-indigo-200 hover:shadow-2xl transform transition-all active:scale-[0.97] cursor-pointer text-sm tracking-wide">
+          {/* NEW: ReCAPTCHA perfectly centered within the UI */}
+          <div className="flex justify-center my-4 overflow-hidden rounded-xl">
+            <ReCAPTCHA
+              sitekey="6LfGd4AsAAAAAPIAbj2Ag4yy1OXdm37O-bcN6ef2" // REPLACE THIS with your actual site key
+              onChange={(token) => setCaptchaToken(token)}
+            />
+          </div>
+
+          <button type="submit" className="w-full mt-2 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-indigo-200 hover:shadow-2xl transform transition-all active:scale-[0.97] cursor-pointer text-sm tracking-wide">
             Sign Up
           </button>
         </form>

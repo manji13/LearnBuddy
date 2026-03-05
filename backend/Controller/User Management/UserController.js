@@ -1,5 +1,6 @@
 const User = require('../../Model/User Management/UserModel.js');
 const jwt = require('jsonwebtoken');
+const axios = require('axios'); // NEW: Import axios for CAPTCHA verification
 
 // Generate JWT Token
 const generateToken = (id, role) => {
@@ -12,8 +13,24 @@ const generateToken = (id, role) => {
 // @route   POST /api/auth/signup
 exports.signup = async (req, res) => {
   try {
-    const { fullName, email, phoneNumber, campus, password, role, profileImage } = req.body;
+    const { fullName, email, phoneNumber, campus, password, role, profileImage, captchaToken } = req.body;
 
+    // NEW: 1. Validate CAPTCHA Token Existence
+    if (!captchaToken) {
+      return res.status(400).json({ message: 'CAPTCHA token is missing. Are you a bot?' });
+    }
+
+    // NEW: 2. Verify CAPTCHA with Google
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY; // Make sure this is in your .env
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+    
+    const captchaResponse = await axios.post(verifyUrl);
+
+    if (!captchaResponse.data.success) {
+      return res.status(400).json({ message: 'CAPTCHA verification failed. Please try again.' });
+    }
+
+    // Original Signup Logic resumes here...
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
