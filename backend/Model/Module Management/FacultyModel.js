@@ -1,27 +1,9 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const facultySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Faculty name is required'],
-    unique: true,
-    trim: true,
-  },
-  code: {
-    type: String,
-    required: [true, 'Faculty code is required'],
-    unique: true,
-    uppercase: true,
-    trim: true,
-  },
-  description: {
-    type: String,
-    trim: true,
-  },
-  dean: {
-    type: String,
-    trim: true,
-  },
-}, { timestamps: true });
+  name:        { type: String, required: [true, 'Faculty name is required'], trim: true },
+  code:        { type: String, required: [true, 'Faculty code is required'], trim: true, unique: true, uppercase: true },
+  description: { type: String, trim: true, default: '' },
+}, { timestamps: true })
 
-module.exports = mongoose.model('Faculty', facultySchema);
+module.exports = mongoose.model('Faculty', facultySchema)

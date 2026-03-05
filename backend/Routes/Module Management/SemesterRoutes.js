@@ -1,19 +1,7 @@
-const express = require('express');
-const router = express.Router();
-const {
-  getSemesters,
-  getSemesterById,
-  createSemester,
-  updateSemester,
-  deleteSemester,
-} = require('../controllers/semesterController');
-const { protect } = require('../middleware/authMiddleware');
-const { adminOnly } = require('../middleware/roleMiddleware');
+const router = require('express').Router()
+const { getAllSemesters, getSemesterById, createSemester, updateSemester, deleteSemester } = require('../../Controller/Module Management/SemesterController')
 
-router.get('/', protect, getSemesters);
-router.get('/:id', protect, getSemesterById);
-router.post('/', protect, adminOnly, createSemester);
-router.put('/:id', protect, adminOnly, updateSemester);
-router.delete('/:id', protect, adminOnly, deleteSemester);
+router.route('/').get(getAllSemesters).post(createSemester)
+router.route('/:id').get(getSemesterById).put(updateSemester).delete(deleteSemester)
 
-module.exports = router;
+module.exports = router

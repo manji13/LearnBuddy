@@ -1,87 +1,63 @@
-const Semester = require('../models/Semester');
+const Semester = require('../../Model/Module Management/SemesterModel')
+const Module   = require('../../Model/Module Management/ModuleModel')
 
-// @desc    Get all semesters
-// @route   GET /api/semesters
-// @access  Private
-const getSemesters = async (req, res) => {
+// GET /api/semesters?faculty=ID
+const getAllSemesters = async (req, res) => {
   try {
-    const filter = {};
-    if (req.query.faculty) filter.faculty = req.query.faculty;
-    const semesters = await Semester.find(filter).populate('faculty', 'name code').sort({ number: 1 });
-    res.json(semesters);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const filter = req.query.faculty ? { faculty: req.query.faculty } : {}
+    const semesters = await Semester.find(filter).populate('faculty', 'name code').sort({ year: 1, semester: 1 })
+    res.json({ success: true, count: semesters.length, data: semesters })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
   }
-};
+}
 
-// @desc    Get semester by ID
-// @route   GET /api/semesters/:id
-// @access  Private
+// GET /api/semesters/:id
 const getSemesterById = async (req, res) => {
   try {
-    const semester = await Semester.findById(req.params.id).populate('faculty', 'name code');
-    if (semester) {
-      res.json(semester);
-    } else {
-      res.status(404).json({ message: 'Semester not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const semester = await Semester.findById(req.params.id).populate('faculty', 'name code')
+    if (!semester) return res.status(404).json({ success: false, message: 'Semester not found' })
+    res.json({ success: true, data: semester })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
   }
-};
+}
 
-// @desc    Create semester
-// @route   POST /api/semesters
-// @access  Private/Admin
+// POST /api/semesters
 const createSemester = async (req, res) => {
   try {
-    const { name, number, faculty, academicYear, description } = req.body;
-    const semester = await Semester.create({ name, number, faculty, academicYear, description });
-    const populated = await semester.populate('faculty', 'name code');
-    res.status(201).json(populated);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const semester = await Semester.create(req.body)
+    const populated = await semester.populate('faculty', 'name code')
+    res.status(201).json({ success: true, data: populated })
+  } catch (err) {
+    const msg = err.code === 11000 ? 'This year/semester combination already exists for this faculty' : err.message
+    res.status(400).json({ success: false, message: msg })
   }
-};
+}
 
-// @desc    Update semester
-// @route   PUT /api/semesters/:id
-// @access  Private/Admin
+// PUT /api/semesters/:id
 const updateSemester = async (req, res) => {
   try {
-    const semester = await Semester.findById(req.params.id);
-    if (semester) {
-      semester.name = req.body.name || semester.name;
-      semester.number = req.body.number || semester.number;
-      semester.faculty = req.body.faculty || semester.faculty;
-      semester.academicYear = req.body.academicYear ?? semester.academicYear;
-      semester.description = req.body.description ?? semester.description;
-      const updated = await semester.save();
-      await updated.populate('faculty', 'name code');
-      res.json(updated);
-    } else {
-      res.status(404).json({ message: 'Semester not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const semester = await Semester.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).populate('faculty', 'name code')
+    if (!semester) return res.status(404).json({ success: false, message: 'Semester not found' })
+    res.json({ success: true, data: semester })
+  } catch (err) {
+    const msg = err.code === 11000 ? 'This year/semester combination already exists for this faculty' : err.message
+    res.status(400).json({ success: false, message: msg })
   }
-};
+}
 
-// @desc    Delete semester
-// @route   DELETE /api/semesters/:id
-// @access  Private/Admin
+// DELETE /api/semesters/:id  (cascade modules)
 const deleteSemester = async (req, res) => {
   try {
-    const semester = await Semester.findById(req.params.id);
-    if (semester) {
-      await semester.deleteOne();
-      res.json({ message: 'Semester removed' });
-    } else {
-      res.status(404).json({ message: 'Semester not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const semester = await Semester.findById(req.params.id)
+    if (!semester) return res.status(404).json({ success: false, message: 'Semester not found' })
+    await Module.deleteMany({ semester: req.params.id })
+    await Semester.findByIdAndDelete(req.params.id)
+    res.json({ success: true, message: 'Semester and related modules deleted' })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
   }
-};
+}
 
-module.exports = { getSemesters, getSemesterById, createSemester, updateSemester, deleteSemester };
+module.exports = { getAllSemesters, getSemesterById, createSemester, updateSemester, deleteSemester }

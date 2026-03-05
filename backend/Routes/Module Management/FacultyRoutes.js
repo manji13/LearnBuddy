@@ -1,19 +1,7 @@
-const express = require('express');
-const router = express.Router();
-const {
-  getFaculties,
-  getFacultyById,
-  createFaculty,
-  updateFaculty,
-  deleteFaculty,
-} = require('../controllers/facultyController');
-const { protect } = require('../middleware/authMiddleware');
-const { adminOnly } = require('../middleware/roleMiddleware');
+const router = require('express').Router()
+const { getAllFaculties, getFacultyById, createFaculty, updateFaculty, deleteFaculty } = require('../../Controller/Module Management/FacultyController')
 
-router.get('/', protect, getFaculties);
-router.get('/:id', protect, getFacultyById);
-router.post('/', protect, adminOnly, createFaculty);
-router.put('/:id', protect, adminOnly, updateFaculty);
-router.delete('/:id', protect, adminOnly, deleteFaculty);
+router.route('/').get(getAllFaculties).post(createFaculty)
+router.route('/:id').get(getFacultyById).put(updateFaculty).delete(deleteFaculty)
 
-module.exports = router;
+module.exports = router

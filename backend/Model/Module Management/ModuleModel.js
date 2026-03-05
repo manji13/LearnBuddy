@@ -1,41 +1,13 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const moduleSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Module name is required'],
-    trim: true,
-  },
-  code: {
-    type: String,
-    required: [true, 'Module code is required'],
-    uppercase: true,
-    trim: true,
-  },
-  semester: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Semester',
-    required: [true, 'Semester is required'],
-  },
-  faculty: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Faculty',
-    required: [true, 'Faculty is required'],
-  },
-  credits: {
-    type: Number,
-    required: [true, 'Credits are required'],
-    min: 1,
-    max: 10,
-  },
-  description: {
-    type: String,
-    trim: true,
-  },
-  lecturer: {
-    type: String,
-    trim: true,
-  },
-}, { timestamps: true });
+  faculty:      { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty',  required: [true, 'Faculty is required'] },
+  semester:     { type: mongoose.Schema.Types.ObjectId, ref: 'Semester', required: [true, 'Semester is required'] },
+  moduleNumber: { type: String, required: [true, 'Module number is required'], trim: true },
+  moduleName:   { type: String, required: [true, 'Module name is required'],   trim: true },
+  description:  { type: String, trim: true, default: '' },
+}, { timestamps: true })
 
-module.exports = mongoose.model('Module', moduleSchema);
+moduleSchema.index({ semester: 1, moduleNumber: 1 }, { unique: true })
+
+module.exports = mongoose.model('Module', moduleSchema)

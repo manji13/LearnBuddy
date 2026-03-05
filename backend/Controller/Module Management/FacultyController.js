@@ -1,85 +1,65 @@
-const Faculty = require('../models/Faculty');
+const Faculty  = require('../../Model/Module Management/FacultyModel')
+const Semester = require('../../Model/Module Management/SemesterModel')
+const Module   = require('../../Model/Module Management/ModuleModel')
 
-// @desc    Get all faculties
-// @route   GET /api/faculties
-// @access  Private
-const getFaculties = async (req, res) => {
+// GET /api/faculties
+const getAllFaculties = async (req, res) => {
   try {
-    const faculties = await Faculty.find({}).sort({ name: 1 });
-    res.json(faculties);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const faculties = await Faculty.find().sort({ createdAt: -1 })
+    res.json({ success: true, count: faculties.length, data: faculties })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
   }
-};
+}
 
-// @desc    Get faculty by ID
-// @route   GET /api/faculties/:id
-// @access  Private
+// GET /api/faculties/:id
 const getFacultyById = async (req, res) => {
   try {
-    const faculty = await Faculty.findById(req.params.id);
-    if (faculty) {
-      res.json(faculty);
-    } else {
-      res.status(404).json({ message: 'Faculty not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const faculty = await Faculty.findById(req.params.id)
+    if (!faculty) return res.status(404).json({ success: false, message: 'Faculty not found' })
+    res.json({ success: true, data: faculty })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
   }
-};
+}
 
-// @desc    Create faculty
-// @route   POST /api/faculties
-// @access  Private/Admin
+// POST /api/faculties
 const createFaculty = async (req, res) => {
   try {
-    const { name, code, description, dean } = req.body;
-    const faculty = await Faculty.create({ name, code, description, dean });
-    res.status(201).json(faculty);
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({ message: 'Faculty name or code already exists' });
-    }
-    res.status(500).json({ message: error.message });
+    const faculty = await Faculty.create(req.body)
+    res.status(201).json({ success: true, data: faculty })
+  } catch (err) {
+    const msg = err.code === 11000 ? 'Faculty code already exists' : err.message
+    res.status(400).json({ success: false, message: msg })
   }
-};
+}
 
-// @desc    Update faculty
-// @route   PUT /api/faculties/:id
-// @access  Private/Admin
+// PUT /api/faculties/:id
 const updateFaculty = async (req, res) => {
   try {
-    const faculty = await Faculty.findById(req.params.id);
-    if (faculty) {
-      faculty.name = req.body.name || faculty.name;
-      faculty.code = req.body.code || faculty.code;
-      faculty.description = req.body.description ?? faculty.description;
-      faculty.dean = req.body.dean ?? faculty.dean;
-      const updated = await faculty.save();
-      res.json(updated);
-    } else {
-      res.status(404).json({ message: 'Faculty not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const faculty = await Faculty.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+    if (!faculty) return res.status(404).json({ success: false, message: 'Faculty not found' })
+    res.json({ success: true, data: faculty })
+  } catch (err) {
+    const msg = err.code === 11000 ? 'Faculty code already exists' : err.message
+    res.status(400).json({ success: false, message: msg })
   }
-};
+}
 
-// @desc    Delete faculty
-// @route   DELETE /api/faculties/:id
-// @access  Private/Admin
+// DELETE /api/faculties/:id  (cascade)
 const deleteFaculty = async (req, res) => {
   try {
-    const faculty = await Faculty.findById(req.params.id);
-    if (faculty) {
-      await faculty.deleteOne();
-      res.json({ message: 'Faculty removed' });
-    } else {
-      res.status(404).json({ message: 'Faculty not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const faculty = await Faculty.findById(req.params.id)
+    if (!faculty) return res.status(404).json({ success: false, message: 'Faculty not found' })
+    const semesters = await Semester.find({ faculty: req.params.id })
+    const semIds = semesters.map(s => s._id)
+    await Module.deleteMany({ semester: { $in: semIds } })
+    await Semester.deleteMany({ faculty: req.params.id })
+    await Faculty.findByIdAndDelete(req.params.id)
+    res.json({ success: true, message: 'Faculty and all related data deleted' })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
   }
-};
+}
 
-module.exports = { getFaculties, getFacultyById, createFaculty, updateFaculty, deleteFaculty };
+module.exports = { getAllFaculties, getFacultyById, createFaculty, updateFaculty, deleteFaculty }
