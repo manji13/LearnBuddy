@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import Sidebar from '../../../Components/ModuleManagement/Sidebar.jsx'
+import Navbar from '../../../Components/NavBar/NavBar.jsx'
 
 export default function FacultyList() {
   const [faculties, setFaculties] = useState([])
@@ -33,7 +35,13 @@ export default function FacultyList() {
   }
 
   return (
-    <div className="max-w-5xl">
+       <div className="min-h-screen bg-slate-50 font-sans">
+      <Navbar />
+       <Sidebar />
+  
+  
+   <div className="ml-56 flex-1 p-8">
+     
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Faculties</h1>
@@ -97,5 +105,7 @@ export default function FacultyList() {
         )}
       </div>
     </div>
+     </div>
+   
   )
 }

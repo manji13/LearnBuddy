@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import Sidebar from '../../../Components/ModuleManagement/Sidebar.jsx'
+import Navbar from '../../../Components/NavBar/NavBar.jsx'
 
 export default function ModuleDetail() {
   const { id } = useParams()
@@ -38,7 +40,12 @@ export default function ModuleDetail() {
   const sem = module.semester
 
   return (
-    <div className="max-w-4xl">
+    <div className="min-h-screen bg-slate-50 font-sans">
+      <Navbar />
+       <Sidebar />
+  
+  
+   <div className="ml-56 flex-1 p-8">
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-6 flex-wrap">
         <Link to="/faculties" className="hover:text-blue-600 transition-colors">Faculties</Link>
         <span>/</span>
@@ -93,6 +100,7 @@ export default function ModuleDetail() {
         {sem && <Link to={`/semesters/${sem._id}`} className="inline-flex items-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors shadow-sm">← Back to Semester</Link>}
         <Link to="/modules" className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">All Modules</Link>
       </div>
+    </div>
     </div>
   )
 }

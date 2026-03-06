@@ -1,12 +1,14 @@
 import React from 'react';
 import Navbar from '../../Components/NavBar/NavBar.jsx'; // Ensure this path points to your new Navbar.jsx
+import Sidebar from '../../Components/ModuleManagement/Sidebar.jsx';
 
 const EmployeeDashboard = () => {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       <Navbar />
+       <Sidebar />
       
-      <main className="max-w-7xl mx-auto p-6 sm:p-8">
+    <main className="ml-56 flex-1 p-8">
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 mt-4 relative overflow-hidden">
           
           {/* Decorative background element */}

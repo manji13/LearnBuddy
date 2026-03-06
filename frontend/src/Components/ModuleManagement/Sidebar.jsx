@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 const NAV = [
+  { to: '/admin-dashboard', label: 'Dashboard', icon: '📊' },
   { to: '/faculties', label: 'Faculties', icon: '🏛' },
   { to: '/semesters', label: 'Semesters', icon: '📅' },
   { to: '/modules',   label: 'Modules',   icon: '📚' },
@@ -10,19 +11,8 @@ export default function Sidebar() {
   return (
     <aside className="w-56 bg-white border-r border-gray-200 fixed inset-y-0 left-0 z-30 flex flex-col">
 
-      {/* Brand */}
-      <div className="h-14 flex items-center gap-2.5 px-5 border-b border-gray-200 shrink-0">
-        <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm select-none">
-          A
-        </div>
-        <span className="font-bold text-gray-900 text-[15px] tracking-tight">LearnBuddy</span>
-      </div>
+      <nav className="flex-1 px-3 pt-20 pb-4 space-y-0.5 overflow-y-auto">
 
-      {/* Nav links */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-3 mb-2">
-          Manage
-        </p>
         {NAV.map(({ to, label, icon }) => (
           <NavLink
             key={to}
@@ -39,15 +29,8 @@ export default function Sidebar() {
             <span>{label}</span>
           </NavLink>
         ))}
-      </nav>
 
-      {/* Footer */}
-      <div className="px-5 py-4 border-t border-gray-100 shrink-0">
-        <p className="text-[10px] font-semibold text-gray-500 mb-1">Hierarchy</p>
-        <p className="text-[11px] text-gray-400 leading-relaxed">
-          Faculties → Semesters → Modules
-        </p>
-      </div>
+      </nav>
 
     </aside>
   )

@@ -23,7 +23,11 @@ import ModuleList from './Pages/Module Management/modules/ModuleList.Jsx';
 import ModuleForm from './Pages/Module Management/modules/ModuleForm.jsx';
 import ModuleDetail from './Pages/Module Management/modules/ModuleDetails.jsx';
 
-import Sidebar from './Components/ModuleManagement/Sidebar.jsx';
+import StudentFaculties from './Pages/Module Management/faculties/Studentfaculties.jsx';
+import StudentSemesters from './Pages/Module Management/modules/Studentsemesters.jsx';
+import StudentModules from './Pages/Module Management/semesters/Studentmodules.jsx';
+
+
 
 function App() {
   return (
@@ -41,42 +45,34 @@ function App() {
         <Route path="/student-dashboard" element={<StudentDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
-        {/* Module Management Layout */}
-        <Route
-          path="/*"
-          element={
-            <div className="flex">
-              <Sidebar />
-              <main className="ml-56 flex-1 p-8">
-                <Routes>
+        {/* Faculties */}
+        <Route path="/faculties" element={<FacultyList />} />
+        <Route path="/faculties/new" element={<FacultyForm />} />
+        <Route path="/faculties/:id" element={<FacultyDetail />} />
+        <Route path="/faculties/:id/edit" element={<FacultyForm />} />
 
-                  <Route path="bbb" element={<Navigate to="/faculties" replace />} />
+        {/* Semesters */}
+        <Route path="/semesters" element={<SemesterList />} />
+        <Route path="/semesters/new" element={<SemesterForm />} />
+        <Route path="/semesters/:id" element={<SemesterDetail />} />
+        <Route path="/semesters/:id/edit" element={<SemesterForm />} />
 
-                  {/* Faculties */}
-                  <Route path="faculties" element={<FacultyList />} />
-                  <Route path="faculties/new" element={<FacultyForm />} />
-                  <Route path="faculties/:id" element={<FacultyDetail />} />
-                  <Route path="faculties/:id/edit" element={<FacultyForm />} />
+        {/* Modules */}
+        <Route path="/modules" element={<ModuleList />} />
+        <Route path="/modules/new" element={<ModuleForm />} />
+        <Route path="/modules/:id" element={<ModuleDetail />} />
+        <Route path="/modules/:id/edit" element={<ModuleForm />} />
 
-                  {/* Semesters */}
-                  <Route path="semesters" element={<SemesterList />} />
-                  <Route path="semesters/new" element={<SemesterForm />} />
-                  <Route path="semesters/:id" element={<SemesterDetail />} />
-                  <Route path="semesters/:id/edit" element={<SemesterForm />} />
+         <Route path="/student/faculties"                                                element={<StudentFaculties />} />
+         <Route path="/student/faculties/:facultyId/semesters"                           element={<StudentSemesters />} />
+         <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules"       element={<StudentModules />} />
+        
 
-                  {/* Modules */}
-                  <Route path="modules" element={<ModuleList />} />
-                  <Route path="modules/new" element={<ModuleForm />} />
-                  <Route path="modules/:id" element={<ModuleDetail />} />
-                  <Route path="modules/:id/edit" element={<ModuleForm />} />
-
-                </Routes>
-              </main>
-            </div>
-          }
-        />
+        {/* Default Redirect */}
+        <Route path="*" element={<Navigate to="/faculties" replace />} />
 
       </Routes>
+
     </Router>
   );
 }
