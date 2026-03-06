@@ -8,13 +8,18 @@ const {
   getUserById,
   forgotPassword,
   verifyOTP,
-  resetPassword
+  resetPassword,
+  getAnalytics
 } = require('../../Controller/User Management/UserController.js');
 
 const router = express.Router();
 
+// Authentication Routes
 router.post('/signup', signup);
 router.post('/signin', signin);
+
+// Analytics Route (MUST be before /users/:id)
+router.get('/analytics', getAnalytics);
 
 // User Management Routes
 router.get('/users', getAllUsers);

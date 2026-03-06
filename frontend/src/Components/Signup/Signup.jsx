@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import ReCAPTCHA from "react-google-recaptcha"; // NEW: Imported ReCAPTCHA
+import ReCAPTCHA from "react-google-recaptcha";
 import logo from '../../assets/learnbuddy-logo.jpg';
 import topBgImage from '../../assets/Signup_img.jpg';
 
@@ -15,6 +15,7 @@ const Signup = () => {
     email: '',
     phoneNumber: '',
     campus: '',
+    faculty: '',
     password: '',
     confirmPassword: '',
     profileImage: ''
@@ -22,7 +23,7 @@ const Signup = () => {
 
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
-  const [captchaToken, setCaptchaToken] = useState(null); // NEW: CAPTCHA state
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   useEffect(() => {
     const loadingTimer = setTimeout(() => {
@@ -58,7 +59,6 @@ const Signup = () => {
       return;
     }
 
-    // NEW: Check if CAPTCHA is completed
     if (!captchaToken) {
       setError('Please complete the CAPTCHA verification.');
       return;
@@ -73,9 +73,10 @@ const Signup = () => {
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           campus: formData.campus,
+          faculty: formData.faculty,
           password: formData.password,
           profileImage: formData.profileImage,
-          captchaToken: captchaToken // NEW: Send token to backend
+          captchaToken: captchaToken 
         })
       });
 
@@ -108,7 +109,6 @@ const Signup = () => {
         </svg>
       </Link>
 
-      {/* Loading Animation */}
       {isLoading && (
         <div className="fixed inset-0 flex items-center justify-center bg-white z-50 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4">
@@ -122,7 +122,6 @@ const Signup = () => {
         </div>
       )}
 
-      {/* HD Background Rendering */}
       <div className="absolute top-0 left-0 w-full h-[50dvh] z-0">
         <img
           src={topBgImage}
@@ -132,7 +131,6 @@ const Signup = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-slate-50"></div>
       </div>
 
-      {/* Deep Shadow Registration Card */}
       <div
         className={`z-10 w-full max-w-lg bg-white rounded-3xl p-7 sm:p-9 relative overflow-hidden transition-all duration-1000 ease-out transform
           shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12),0_15px_30px_-10px_rgba(0,0,0,0.08)]
@@ -151,7 +149,6 @@ const Signup = () => {
           </div>
         )}
 
-        {/* Form Header */}
         <div className="text-center mb-6">
           <div className="relative inline-block">
             <img 
@@ -168,7 +165,6 @@ const Signup = () => {
             </label>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 to-teal-600 bg-clip-text text-transparent">Create an Account</h2>
-          <p className="text-slate-600 text-sm mt-1.5 font-medium">Join LearnBuddy today</p>
         </div>
 
         {error && <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-sm text-center font-medium shadow-inner">{error}</div>}
@@ -177,40 +173,60 @@ const Signup = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Full Name</label>
-              <input type="text" name="fullName" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white hover:border-slate-300" placeholder="John Doe" />
+              <input type="text" name="fullName" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="John Doe" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Email</label>
-              <input type="email" name="email" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white hover:border-slate-300" placeholder="john@example.com" />
+              <input type="email" name="email" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="john@example.com" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Phone Number</label>
-              <input type="text" name="phoneNumber" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white hover:border-slate-300" placeholder="+1 234 567 8900" />
+              <input type="text" name="phoneNumber" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="+1 234 567 8900" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Campus</label>
-              <input type="text" name="campus" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white hover:border-slate-300" placeholder="Main Campus" />
+              <select name="campus" required onChange={handleChange} value={formData.campus} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white">
+                <option value="" disabled>Select Campus</option>
+                <option value="SLIIT - Malabe">SLIIT - Malabe</option>
+                <option value="SLIIT - Kandy">SLIIT - Kandy</option>
+                <option value="SLIIT - Matara">SLIIT - Matara</option>
+                <option value="SLIIT - Jaffna">SLIIT - Jaffna</option>
+                <option value="SLIIT - Kurunegala">SLIIT - Kurunegala</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Password</label>
-              <input type="password" name="password" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white hover:border-slate-300" placeholder="••••••••" />
+              <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Faculty</label>
+              <select name="faculty" required onChange={handleChange} value={formData.faculty} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white">
+                <option value="" disabled>Select Faculty</option>
+                <option value="Computing">Computing</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Management">Management</option>
+                <option value="Human Science">Human Science</option>
+              </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Confirm Password</label>
-              <input type="password" name="confirmPassword" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white hover:border-slate-300" placeholder="••••••••" />
+              <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Password</label>
+              <input type="password" name="password" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="••••••••" />
             </div>
           </div>
 
-          {/* NEW: ReCAPTCHA perfectly centered within the UI */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Confirm Password</label>
+              <input type="password" name="confirmPassword" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="••••••••" />
+            </div>
+          </div>
+
           <div className="flex justify-center my-4 overflow-hidden rounded-xl">
             <ReCAPTCHA
-              sitekey="6LfGd4AsAAAAAPIAbj2Ag4yy1OXdm37O-bcN6ef2" // REPLACE THIS with your actual site key
+              sitekey="6LfGd4AsAAAAAPIAbj2Ag4yy1OXdm37O-bcN6ef2"
               onChange={(token) => setCaptchaToken(token)}
             />
           </div>

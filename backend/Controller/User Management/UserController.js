@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 // @route   POST /api/auth/signup
 exports.signup = async (req, res) => {
   try {
-    const { fullName, email, phoneNumber, campus, password, role, profileImage, captchaToken } = req.body;
+    const { fullName, email, phoneNumber, campus, faculty, password, role, profileImage, captchaToken } = req.body;
 
     if (!captchaToken) {
       return res.status(400).json({ message: 'CAPTCHA token is missing. Are you a bot?' });
@@ -50,6 +50,7 @@ exports.signup = async (req, res) => {
       email,
       phoneNumber,
       campus,
+      faculty, // Saved to DB
       password,
       profileImage,
       role: assignedRole
@@ -118,6 +119,7 @@ exports.updateUser = async (req, res) => {
       user.email = req.body.email || user.email;
       user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
       user.campus = req.body.campus || user.campus;
+      user.faculty = req.body.faculty || user.faculty; 
       user.role = req.body.role || user.role; 
       
       if (req.body.password) {
@@ -171,12 +173,38 @@ exports.getUserById = async (req, res) => {
   }
 };
 
+// @desc    Get Analytics for Charts
+// @route   GET /api/auth/analytics
+exports.getAnalytics = async (req, res) => {
+  try {
+    // Only fetch students for the enrollment charts
+    const students = await User.find({ role: 'Student' });
+
+    const campusCounts = {};
+    const facultyCounts = {};
+
+    students.forEach(student => {
+      if (student.campus) {
+        campusCounts[student.campus] = (campusCounts[student.campus] || 0) + 1;
+      }
+      if (student.faculty) {
+        facultyCounts[student.faculty] = (facultyCounts[student.faculty] || 0) + 1;
+      }
+    });
+
+    const campusData = Object.keys(campusCounts).map(key => ({ name: key, count: campusCounts[key] }));
+    const facultyData = Object.keys(facultyCounts).map(key => ({ name: key, count: facultyCounts[key] }));
+
+    res.json({ campusData, facultyData });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ==========================================
 // FORGOT PASSWORD FLOW
 // ==========================================
 
-// @desc    Step 1: Send OTP to Email
-// @route   POST /api/auth/forgot-password
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -186,15 +214,12 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ message: 'User with this email does not exist.' });
     }
 
-    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Set OTP and expiration (10 minutes)
     user.resetOtp = otp;
     user.resetOtpExpire = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    // Send Email
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
@@ -210,8 +235,6 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// @desc    Step 2: Verify OTP
-// @route   POST /api/auth/verify-otp
 exports.verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -235,8 +258,6 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
-// @desc    Step 3: Reset Password
-// @route   POST /api/auth/reset-password
 exports.resetPassword = async (req, res) => {
   try {
     const { email, newPassword } = req.body;

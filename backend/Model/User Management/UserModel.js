@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phoneNumber: { type: String, required: true },
   campus: { type: String, required: true },
+  faculty: { type: String, required: true }, // NEW: Added faculty field
   password: { type: String, required: true },
   profileImage: { type: String, default: "" },
   role: { 
