@@ -7,6 +7,7 @@ import Signin from './Components/Signin/Signin';
 import Signup from './Components/Signup/Signup';
 import User from './Pages/User Management/User';
 import UserProfile from './Pages/User Management/UserPrfole.jsx';
+import ForgotPassword from './Pages/User Management/ForgotPassword.jsx';
 
 import StudentDashboard from './Pages/User Management/StudentDashboard.jsx';
 import AdminDashboard from './Pages/User Management/EmployeeDashboard.jsx';
@@ -23,6 +24,7 @@ function App() {
           <Route path="/users" element={<User />} />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           <Route path="/users/:id" element={<UserProfile />} />
 

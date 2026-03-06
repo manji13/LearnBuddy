@@ -64,7 +64,7 @@ const Signin = () => {
       // Store credentials and data in localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('userRole', data.role);
-      localStorage.setItem('userId', data._id); // CRITICAL: Saved for the profile page
+      localStorage.setItem('userId', data._id); 
       
       if (data.profileImage) {
         localStorage.setItem('profileImage', data.profileImage);
@@ -147,7 +147,15 @@ const Signin = () => {
             <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Password</label>
             <input type="password" name="password" required onChange={handleChange} className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white hover:border-slate-300" placeholder="••••••••" />
           </div>
-          <button type="submit" className="w-full mt-6 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-extrabold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-indigo-200 hover:shadow-2xl transform transition-all active:scale-[0.97] cursor-pointer text-sm tracking-wide">
+          
+          {/* FORGOT PASSWORD LINK ADDED HERE */}
+          <div className="flex justify-end mt-1 mb-2">
+            <Link to="/forgot-password" className="text-xs text-indigo-600 font-bold hover:text-teal-500 transition-colors">
+              Forgot Password?
+            </Link>
+          </div>
+
+          <button type="submit" className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-extrabold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-indigo-200 hover:shadow-2xl transform transition-all active:scale-[0.97] cursor-pointer text-sm tracking-wide">
             Sign In
           </button>
         </form>

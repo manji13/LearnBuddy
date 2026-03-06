@@ -7,12 +7,15 @@ const userSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true },
   campus: { type: String, required: true },
   password: { type: String, required: true },
-  profileImage: { type: String, default: "" }, // NEW: Added profile image field
+  profileImage: { type: String, default: "" },
   role: { 
     type: String, 
     enum: ['Student', 'Employee', 'Admin'], 
     default: 'Student' 
-  }
+  },
+  // Fields for OTP-based password reset
+  resetOtp: { type: String },
+  resetOtpExpire: { type: Date }
 }, { timestamps: true });
 
 // Hash password before saving

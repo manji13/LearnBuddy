@@ -1,10 +1,13 @@
 const express = require('express');
 const dotenv = require('dotenv');
+
+// 1. MUST LOAD ENVIRONMENT VARIABLES FIRST!
+dotenv.config();
+
+// 2. NOW we can import files that rely on those variables
 const cors = require('cors');
 const connectDB = require('./db');
 const authRoutes = require('./Routes/User Management/UserRoute.js');
-
-dotenv.config();
 
 const app = express();
 
