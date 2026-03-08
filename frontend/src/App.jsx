@@ -41,6 +41,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/users" element={<User />} />
+        <Route path="/users/:id" element={<UserProfile />} />
         <Route path="/employee/users" element={<User />} />
         <Route path="/student-dashboard" element={<StudentDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -67,8 +68,6 @@ function App() {
         <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
         <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
 
-        {/* Default Redirect */}
-        <Route path="*" element={<Navigate to="/faculties" replace />} />
       </Routes>
     </Router>
   );

@@ -4,9 +4,11 @@ import logo from '../../assets/learnbuddy-logo.jpg'; // Adjust path if needed
 
 const EmployeeNavbar = () => {
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
+  const [isManageOpen, setIsManageOpen] = useState(false); // NEW STATE FOR MANAGE DROPDOWN
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   
   const analysisRef = useRef(null);
+  const manageRef = useRef(null); // NEW REF FOR MANAGE DROPDOWN
   const profileRef = useRef(null);
   const navigate = useNavigate();
 
@@ -15,6 +17,9 @@ const EmployeeNavbar = () => {
     const handleClickOutside = (event) => {
       if (analysisRef.current && !analysisRef.current.contains(event.target)) {
         setIsAnalysisOpen(false);
+      }
+      if (manageRef.current && !manageRef.current.contains(event.target)) {
+        setIsManageOpen(false);
       }
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setIsProfileOpen(false);
@@ -47,10 +52,74 @@ const EmployeeNavbar = () => {
           {/* Right Side: Navigation Links & Profile */}
           <div className="flex items-center space-x-6">
             
+            {/* ========================================== */}
+            {/* NEW: Manage (Faculties/Semesters/Modules) Dropdown */}
+            {/* ========================================== */}
+            <div className="relative" ref={manageRef}>
+              <button 
+                onClick={() => {
+                  setIsManageOpen(!isManageOpen);
+                  setIsAnalysisOpen(false); // Close others
+                  setIsProfileOpen(false);
+                }}
+                className="flex items-center text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200 focus:outline-none cursor-pointer"
+              >
+                Manage
+                <svg className={`ml-1 h-4 w-4 transform transition-transform duration-200 ${isManageOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isManageOpen && (
+                <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 animate-fade-in-down origin-top-right">
+                  <Link 
+                    to="/admin-dashboard" 
+                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                    onClick={() => setIsManageOpen(false)}
+                  >
+                    <div className="flex items-center cursor-pointer">
+                      <span className="mr-3 text-lg">📊</span> Dashboard
+                    </div>
+                  </Link>
+                  <Link 
+                    to="/faculties" 
+                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                    onClick={() => setIsManageOpen(false)}
+                  >
+                    <div className="flex items-center cursor-pointer">
+                      <span className="mr-3 text-lg">🏛️</span> Faculties
+                    </div>
+                  </Link>
+                  <Link 
+                    to="/semesters" 
+                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                    onClick={() => setIsManageOpen(false)}
+                  >
+                    <div className="flex items-center cursor-pointer">
+                      <span className="mr-3 text-lg">📅</span> Semesters
+                    </div>
+                  </Link>
+                  <Link 
+                    to="/modules" 
+                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                    onClick={() => setIsManageOpen(false)}
+                  >
+                    <div className="flex items-center cursor-pointer">
+                      <span className="mr-3 text-lg">📚</span> Modules
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+
             {/* Analysis Dropdown */}
             <div className="relative" ref={analysisRef}>
               <button 
-                onClick={() => setIsAnalysisOpen(!isAnalysisOpen)}
+                onClick={() => {
+                  setIsAnalysisOpen(!isAnalysisOpen);
+                  setIsManageOpen(false); // Close others
+                  setIsProfileOpen(false);
+                }}
                 className="flex items-center text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200 focus:outline-none cursor-pointer"
               >
                 Analysis
@@ -92,7 +161,11 @@ const EmployeeNavbar = () => {
             {/* Profile Dropdown */}
             <div className="relative" ref={profileRef}>
               <button 
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                onClick={() => {
+                  setIsProfileOpen(!isProfileOpen);
+                  setIsAnalysisOpen(false); // Close others
+                  setIsManageOpen(false);
+                }}
                 className="flex items-center justify-center h-10 w-10 rounded-full bg-slate-100 hover:bg-indigo-50 border border-slate-200 focus:outline-none transition-colors cursor-pointer"
               >
                 {/* Default User SVG Icon */}

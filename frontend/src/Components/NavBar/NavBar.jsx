@@ -2,33 +2,38 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../assets/learnbuddy-logo.jpg';
 
+// 1. Moved outside to prevent unnecessary re-renders!
+const NavLink = ({ to, children, onClick, className = '' }) => {
+  const baseClasses = "text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/80 px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer select-none";
+  return to ? (
+    <Link to={to} className={`${baseClasses} ${className}`}>
+      {children}
+    </Link>
+  ) : (
+    <button onClick={onClick} className={`${baseClasses} ${className}`}>
+      {children}
+    </button>
+  );
+};
+
+// 2. Moved outside
+const DropdownArrow = () => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" 
+    viewBox="0 0 20 20" 
+    fill="currentColor"
+  >
+    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+  </svg>
+);
+
 const StudentNavbar = () => {
   const navigate = useNavigate();
   const profileImage = localStorage.getItem('profileImage');
-
-  const NavLink = ({ to, children, onClick, className = '' }) => {
-    const baseClasses = "text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/80 px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer select-none";
-    return to ? (
-      <Link to={to} className={`${baseClasses} ${className}`}>
-        {children}
-      </Link>
-    ) : (
-      <button onClick={onClick} className={`${baseClasses} ${className}`}>
-        {children}
-      </button>
-    );
-  };
-
-  const DropdownArrow = () => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" 
-      viewBox="0 0 20 20" 
-      fill="currentColor"
-    >
-      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-    </svg>
-  );
+  
+  // Get actual user ID from localStorage if available, fallback to a default or handle it
+  const userId = localStorage.getItem('userId') || ''; 
 
   return (
     <nav className="w-full backdrop-blur-md bg-white/70 px-6 py-2.5 flex justify-between items-center sticky top-0 z-50 border-b border-white/20 shadow-lg">
@@ -36,10 +41,10 @@ const StudentNavbar = () => {
       {/* Left Side: Logo & Brand */}
       <div 
         className="flex items-center gap-3 cursor-pointer group" 
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/student-dashboard')}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && navigate('/')}
+        onKeyDown={(e) => e.key === 'Enter' && navigate('/student-dashboard')}
       >
         <img 
           src={logo} 
@@ -68,17 +73,12 @@ const StudentNavbar = () => {
           
           {/* Faculty Dropdown Menu */}
           <div className="absolute top-full left-0 mt-1 w-44 backdrop-blur-md bg-white/90 shadow-xl rounded-xl border border-white/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 flex flex-col overflow-hidden">
+            {/* FIXED: Pointing to the correct routes from App.jsx */}
             <Link 
-              to="/faculty/engineer" 
+              to="/student/faculties" 
               className="px-4 py-3 text-sm font-medium text-slate-600 hover:bg-indigo-50/80 hover:text-indigo-600 hover:pl-5 transition-all duration-200 cursor-pointer border-b border-white/20"
             >
-              Engineer
-            </Link>
-            <Link 
-              to="/faculty/computing" 
-              className="px-4 py-3 text-sm font-medium text-slate-600 hover:bg-indigo-50/80 hover:text-indigo-600 hover:pl-5 transition-all duration-200 cursor-pointer"
-            >
-              Computing
+              All Faculties
             </Link>
           </div>
         </div>
@@ -126,12 +126,12 @@ const StudentNavbar = () => {
 
       </div>
 
-      {/* Right Side: Profile Only (Logout Removed) */}
+      {/* Right Side: Profile Only */}
       <div className="flex items-center border-l border-white/20 pl-4 sm:pl-6">
         
-        {/* Profile Icon */}
+        {/* FIXED: Removed the literal :id string */}
         <Link 
-          to="/users/:id" 
+          to={userId ? `/users/${userId}` : "#"} 
           className="relative group cursor-pointer block"
           aria-label="My Profile"
         >
