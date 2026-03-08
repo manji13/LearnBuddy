@@ -63,10 +63,11 @@ function App() {
         <Route path="/modules/new" element={<ModuleForm />} />
         <Route path="/modules/:id" element={<ModuleDetail />} />
         <Route path="/modules/:id/edit" element={<ModuleForm />} />
-
         <Route path="/student/faculties" element={<StudentFaculties />} />
         <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
         <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
+
+        
 
       </Routes>
     </Router>

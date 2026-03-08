@@ -5,9 +5,9 @@ import {
   ResponsiveContainer, Cell, PieChart, Pie, Legend,
 } from 'recharts';
 
-import Navbar from '../../Components/NavBar/NavBar.jsx'; 
-import Sidebar from '../../Components/ModuleManagement/Sidebar.jsx';
 import EmployeeNavbar from '../../Components/NavBar/employeeNavbar.jsx'; 
+// Corrected import path below based on your folder structure
+import Faculty_Module_Sem from '../Module Management/Faculty_Module_SemDash.jsx';
 
 const CAMPUS_COLORS  = ['#6366f1','#818cf8','#4f46e5','#a5b4fc','#7c3aed','#c4b5fd'];
 const FACULTY_COLORS = ['#0891b2','#06b6d4','#0e7490','#22d3ee','#0284c7','#38bdf8','#0369a1','#7dd3fc'];
@@ -374,6 +374,8 @@ export default function EmployeePage() {
                   </tfoot>
                 </table>
               </ChartCard>
+
+              < Faculty_Module_Sem />
             </div>
           )}
 
