@@ -5,7 +5,8 @@ import {
   ResponsiveContainer, Cell, PieChart, Pie, Legend,
 } from 'recharts';
 
-// IMPORT YOUR NAVBAR HERE (Adjust the path if it is in a different folder)
+import Navbar from '../../Components/NavBar/NavBar.jsx'; 
+import Sidebar from '../../Components/ModuleManagement/Sidebar.jsx';
 import EmployeeNavbar from '../../Components/NavBar/employeeNavbar.jsx'; 
 
 const CAMPUS_COLORS  = ['#6366f1','#818cf8','#4f46e5','#a5b4fc','#7c3aed','#c4b5fd'];
