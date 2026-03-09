@@ -11,6 +11,10 @@ import ForgotPassword from './Pages/User Management/ForgotPassword.jsx';
 
 import StudentDashboard from './Pages/User Management/StudentDashboard.jsx';
 import AdminDashboard from './Pages/User Management/EmployeeDashboard.jsx';
+import PastPaperPage from './Pages/pastPaper/PastPaperPage.jsx';
+import QuizHistoryPage from './Pages/pastPaper/QuizHistoryPage.jsx';
+import AdminPastPaperPage from './Pages/pastPaper/AdminPastPaperPage.jsx';
+import NotesAiPage from './Pages/notes/NotesAiPage.jsx';
 
 import FacultyList from './Pages/Module Management/faculties/FacultyList.jsx';
 import FacultyForm from './Pages/Module Management/faculties/FacultyForm.jsx';
@@ -52,11 +56,19 @@ function App() {
         <Route path="/faculties/:id" element={<FacultyDetail />} />
         <Route path="/faculties/:id/edit" element={<FacultyForm />} />
 
+<<<<<<< Updated upstream
         {/* Semesters */}
         <Route path="/semesters" element={<SemesterList />} />
         <Route path="/semesters/new" element={<SemesterForm />} />
         <Route path="/semesters/:id" element={<SemesterDetail />} />
         <Route path="/semesters/:id/edit" element={<SemesterForm />} />
+=======
+          <Route path="/past-papers" element={<PastPaperPage />} />
+          <Route path="/quiz-history" element={<QuizHistoryPage />} />
+          <Route path="/admin/past-papers" element={<AdminPastPaperPage />} />
+          <Route path="/notes-ai" element={<NotesAiPage />} />
+
+>>>>>>> Stashed changes
 
         {/* Modules */}
         <Route path="/modules" element={<ModuleList />} />
