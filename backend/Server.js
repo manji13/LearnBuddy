@@ -18,8 +18,25 @@ const app = express();
 // Connect to the database
 connectDB();
 
+// CORS Configuration — allow requests from the Vite dev server
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (e.g. curl, Postman) or any localhost port
+    if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+};
+
 // Middleware
-app.use(cors()); 
+app.use(cors(corsOptions));
+// Explicitly handle OPTIONS preflight for all routes (regex compatible with Express v5)
+app.options(/(.*)/,  cors(corsOptions));
 // INCREASED LIMIT: Base64 images require a larger payload limit
 app.use(express.json({ limit: '50mb' })); 
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -37,7 +54,7 @@ app.use('/api/semesters', semesterRoutes);
 app.use('/api/modules', moduleRoutes);
 
 // Define the port
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.port || process.env.PORT || 8080;
 
 // Start the server
 app.listen(PORT, () => {

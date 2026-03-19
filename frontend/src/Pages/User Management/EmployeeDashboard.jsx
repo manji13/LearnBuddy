@@ -1,3 +1,4 @@
+import API_URL from '../../api/config';
 import React, { useState, useEffect } from 'react';
 import {
   BarChart, Bar, AreaChart, Area, LineChart, Line,
@@ -92,7 +93,7 @@ export default function EmployeePage() {
   const fetchData = async () => {
     setLoading(true); setError('');
     try {
-      const res  = await fetch('http://localhost:5000/api/auth/analytics');
+      const res  = await fetch(`${API_URL}/auth/analytics`);
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
       setCampusData(data.campusData   || data.campus  || []);

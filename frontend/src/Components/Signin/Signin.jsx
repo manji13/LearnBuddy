@@ -1,3 +1,4 @@
+import API_URL from '../../api/config';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import logo from '../../assets/learnbuddy-logo.jpg';
@@ -49,7 +50,7 @@ const Signin = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signin', {
+      const response = await fetch(`${API_URL}/auth/signin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

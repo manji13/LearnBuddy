@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
@@ -17,7 +18,7 @@ export default function ModuleList() {
   const [loading,    setLoading]    = useState(true)
 
   useEffect(() => {
-    Promise.all([axios.get('http://localhost:5000/api/faculties'), axios.get('http://localhost:5000/api/semesters')])
+    Promise.all([axios.get(`${API_URL}/faculties`), axios.get(`${API_URL}/semesters`)])
       .then(([{ data: fd }, { data: sd }]) => {
         setFaculties(fd.data ?? fd)
         setAllSems(sd.data ?? sd)
@@ -35,7 +36,7 @@ export default function ModuleList() {
       const params = {}
       if (facFilter) params.faculty  = facFilter
       if (semFilter) params.semester = semFilter
-      const { data } = await axios.get('http://localhost:5000/api/modules', { params })
+      const { data } = await axios.get(`${API_URL}/modules`, { params })
       setModules(data.data ?? data)
     } catch {
       toast.error('Failed to load modules')
@@ -49,7 +50,7 @@ export default function ModuleList() {
   const handleDelete = async m => {
     if (!window.confirm(`Delete "${m.moduleName}"?`)) return
     try {
-      await axios.delete(`http://localhost:5000/api/modules/${m._id}`)
+      await axios.delete(`${API_URL}/modules/${m._id}`)
       toast.success('Module deleted')
       load()
     } catch {

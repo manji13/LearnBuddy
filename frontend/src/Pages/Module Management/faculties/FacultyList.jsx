@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
@@ -12,7 +13,7 @@ export default function FacultyList() {
   const load = async () => {
     try {
       setLoading(true)
-      const { data } = await axios.get('http://localhost:5000/api/faculties')
+      const { data } = await axios.get(`${API_URL}/faculties`)
       setFaculties(data.data ?? data)
     } catch {
       toast.error('Failed to load faculties')
@@ -26,7 +27,7 @@ export default function FacultyList() {
   const handleDelete = async (f) => {
     if (!window.confirm(`Delete "${f.name}"?\nAll semesters and modules will also be removed.`)) return
     try {
-      await axios.delete(`http://localhost:5000/api/faculties/${f._id}`)
+      await axios.delete(`${API_URL}/faculties/${f._id}`)
       toast.success('Faculty deleted')
       load()
     } catch {
