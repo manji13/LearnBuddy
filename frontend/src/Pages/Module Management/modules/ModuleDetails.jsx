@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
@@ -12,7 +13,7 @@ export default function ModuleDetail() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/modules/${id}`)
+    axios.get(`${API_URL}/modules/${id}`)
       .then(({ data }) => setModule(data.data ?? data))
       .catch(() => toast.error('Failed to load module'))
       .finally(() => setLoading(false))
@@ -21,7 +22,7 @@ export default function ModuleDetail() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete "${module?.moduleName}"?`)) return
     try {
-      await axios.delete(`http://localhost:5000/api/modules/${id}`)
+      await axios.delete(`${API_URL}/modules/${id}`)
       toast.success('Module deleted')
       navigate('/modules')
     } catch {

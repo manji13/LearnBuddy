@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
@@ -25,10 +26,10 @@ export default function SemesterForm() {
   useEffect(() => {
     const init = async () => {
       try {
-        const { data: fd } = await axios.get('http://localhost:5000/api/faculties')
+        const { data: fd } = await axios.get(`${API_URL}/faculties`)
         setFaculties(fd.data ?? fd)
         if (isEdit) {
-          const { data: sd } = await axios.get(`http://localhost:5000/api/semesters/${id}`)
+          const { data: sd } = await axios.get(`${API_URL}/semesters/${id}`)
           const s = sd.data ?? sd
           setForm({ faculty: s.faculty?._id || s.faculty, year: String(s.year), semester: String(s.semester) })
         }
@@ -50,11 +51,11 @@ export default function SemesterForm() {
     try {
       const payload = { faculty: form.faculty, year: Number(form.year), semester: Number(form.semester) }
       if (isEdit) {
-        await axios.put(`http://localhost:5000/api/semesters/${id}`, payload)
+        await axios.put(`${API_URL}/semesters/${id}`, payload)
         toast.success('Semester updated')
         navigate(`/semesters/${id}`)
       } else {
-        const { data } = await axios.post('http://localhost:5000/api/semesters', payload)
+        const { data } = await axios.post(`${API_URL}/semesters`, payload)
         toast.success('Semester created')
         // ✅ After creating, go to the new semester's detail page
         navigate(`/semesters/${(data.data ?? data)._id}`)

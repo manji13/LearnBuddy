@@ -1,3 +1,4 @@
+import API_URL from '../../api/config';
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
@@ -59,9 +60,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      axios.get('http://localhost:5000/api/faculties'),
-      axios.get('http://localhost:5000/api/semesters'),
-      axios.get('http://localhost:5000/api/modules'),
+      axios.get(`${API_URL}/faculties`),
+      axios.get(`${API_URL}/semesters`),
+      axios.get(`${API_URL}/modules`),
     ])
       .then(([{ data: fd }, { data: sd }, { data: md }]) => {
         setFaculties(fd.data ?? fd)

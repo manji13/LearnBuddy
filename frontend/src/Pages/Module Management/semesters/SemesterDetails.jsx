@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
@@ -14,8 +15,8 @@ export default function SemesterDetail() {
 
   useEffect(() => {
     Promise.all([
-      axios.get(`http://localhost:5000/api/semesters/${id}`),
-      axios.get('http://localhost:5000/api/modules', { params: { semester: id } }),
+      axios.get(`${API_URL}/semesters/${id}`),
+      axios.get(`${API_URL}/modules`, { params: { semester: id } }),
     ])
       .then(([{ data: sd }, { data: md }]) => {
         setSemester(sd.data ?? sd)
@@ -28,7 +29,7 @@ export default function SemesterDetail() {
   const handleDelete = async () => {
     if (!window.confirm('Delete this semester?\nAll modules inside will be removed.')) return
     try {
-      await axios.delete(`http://localhost:5000/api/semesters/${id}`)
+      await axios.delete(`${API_URL}/semesters/${id}`)
       toast.success('Semester deleted')
       navigate('/semesters')
     } catch {

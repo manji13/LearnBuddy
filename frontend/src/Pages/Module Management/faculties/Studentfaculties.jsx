@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
@@ -11,7 +12,7 @@ export default function StudentFaculties() {
   const [search,    setSearch]    = useState('')
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/faculties')
+    axios.get(`${API_URL}/faculties`)
       .then(({ data }) => setFaculties(data.data ?? data))
       .catch(() => toast.error('Failed to load faculties'))
       .finally(() => setLoading(false))

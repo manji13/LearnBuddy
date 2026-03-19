@@ -1,3 +1,4 @@
+import API_URL from '../../api/config';
 import React, { useState, useEffect } from 'react';
 import EmployeeNavbar from '../../Components/NavBar/employeeNavbar.jsx'; // Adjust this path if needed
 
@@ -15,7 +16,7 @@ const User = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/users');
+      const response = await fetch(`${API_URL}/auth/users`);
       const data = await response.json();
       setUsers(data);
       setIsLoading(false);
@@ -28,7 +29,7 @@ const User = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/users/${id}`, {
+        const response = await fetch(`${API_URL}/auth/users/${id}`, {
           method: 'DELETE',
         });
         if (response.ok) {
@@ -57,7 +58,7 @@ const User = () => {
   const submitEdit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/users/${editingUser._id}`, {
+      const response = await fetch(`${API_URL}/auth/users/${editingUser._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingUser)
