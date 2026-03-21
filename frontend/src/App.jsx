@@ -15,6 +15,7 @@ import QuizHistoryPage from './Pages/pastPaper/QuizHistoryPage.jsx';
 import AdminPastPaperPage from './Pages/pastPaper/AdminPastPaperPage.jsx';
 import NotesAiPage from './Pages/notes/NotesAiPage.jsx';
 
+
 function App() {
   return (
     <Router>
@@ -29,6 +30,10 @@ function App() {
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
           <Route path="/users/:id" element={<UserProfile />} />
+
+
+
+
 
           <Route path="/past-papers" element={<PastPaperPage />} />
           <Route path="/quiz-history" element={<QuizHistoryPage />} />
