@@ -16,6 +16,8 @@ import QuizHistoryPage from './Pages/pastPaper/QuizHistoryPage.jsx';
 import AdminPastPaperPage from './Pages/pastPaper/AdminPastPaperPage.jsx';
 import NotesAiPage from './Pages/notes/NotesAiPage.jsx';
 
+import ContactUs from './Pages/Support/ContactUs.jsx';
+
 import FacultyList from './Pages/Module Management/faculties/FacultyList.jsx';
 import FacultyForm from './Pages/Module Management/faculties/FacultyForm.jsx';
 import FacultyDetail from './Pages/Module Management/faculties/FacultyDetails.jsx';
@@ -71,6 +73,9 @@ function App() {
         <Route path="/student/faculties" element={<StudentFaculties />} />
         <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
         <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
+
+        {/* Contact Us */}
+        <Route path="/contact" element={<ContactUs />} />
 
           <Route path="/past-papers" element={<PastPaperPage />} />
           <Route path="/quiz-history" element={<QuizHistoryPage />} />

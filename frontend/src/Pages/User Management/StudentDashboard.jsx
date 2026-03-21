@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../Components/NavBar/NavBar.jsx';
+import { Link } from 'react-router-dom';
 
 // Import your images directly from the assets folder
 import heroImg1 from '../../assets/hero-student-studying.jpg';
@@ -109,11 +110,10 @@ const StudentDashboard = () => {
               <button
                 key={index}
                 onClick={() => handleDotClick(index)}
-                className={`h-2 rounded-full transition-all duration-700 ease-in-out ${
-                  index === currentImageIndex
+                className={`h-2 rounded-full transition-all duration-700 ease-in-out ${index === currentImageIndex
                     ? 'bg-indigo-400 w-10 shadow-[0_0_12px_rgba(129,140,248,0.8)]'
                     : 'bg-white/40 w-2 hover:bg-white/70'
-                }`}
+                  }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
@@ -130,15 +130,15 @@ const StudentDashboard = () => {
         {/* 2. MISSION & TARGET SECTION WITH HOVER EFFECTS */}
         <div className="container mx-auto px-6 mt-16 max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
+
             {/* Mission Card */}
             <div className="relative group overflow-hidden rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-[400px] animate-in fade-in-up animation-delay-200">
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110"
                 style={{ backgroundImage: `url(${heroImg1})` }}
               />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-slate-900/80 transition-colors duration-500" />
-              
+
               <div className="relative z-10 p-8 h-full flex flex-col items-center justify-center text-center transform transition-all duration-500">
                 <div className="w-16 h-16 bg-indigo-50/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 text-indigo-300 group-hover:scale-110 transition-transform duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
@@ -146,7 +146,7 @@ const StudentDashboard = () => {
                   </svg>
                 </div>
                 <h2 className="text-3xl font-extrabold text-white mb-4 drop-shadow-md">Our Mission</h2>
-                
+
                 <div className="opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-in-out h-0 group-hover:h-auto">
                   <p className="text-slate-200 text-lg leading-relaxed mt-4">
                     To empower students by providing an intuitive, all-in-one educational platform that bridges the gap between raw information and effective learning.
@@ -157,12 +157,12 @@ const StudentDashboard = () => {
 
             {/* Target Card */}
             <div className="relative group overflow-hidden rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-[400px] animate-in fade-in-up animation-delay-400">
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110"
                 style={{ backgroundImage: `url(${heroImg2})` }}
               />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-slate-900/80 transition-colors duration-500" />
-              
+
               <div className="relative z-10 p-8 h-full flex flex-col items-center justify-center text-center transform transition-all duration-500">
                 <div className="w-16 h-16 bg-teal-50/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 text-teal-300 group-hover:scale-110 transition-transform duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
@@ -170,7 +170,7 @@ const StudentDashboard = () => {
                   </svg>
                 </div>
                 <h2 className="text-3xl font-extrabold text-white mb-4 drop-shadow-md">Our Target</h2>
-                
+
                 <div className="opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-in-out h-0 group-hover:h-auto">
                   <p className="text-slate-200 text-base md:text-lg leading-relaxed mt-4">
                     We are built for dedicated learners—from Engineering to Computing and beyond. We aim to replace scattered notes and endless web searching with structured, accessible, and intelligent study tools, ensuring that every student has the resources they need to achieve their highest academic potential.
@@ -193,18 +193,18 @@ const StudentDashboard = () => {
 
           {/* AI Tools Grid (4 items with hover effects) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
+
             {/* AI Tool 1: Note Summary Generator */}
             <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-200">
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110" style={{ backgroundImage: `url(${heroImg3})` }} />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-indigo-900/80 transition-colors duration-500" />
-              
+
               <div className="relative z-10 p-6 h-full flex flex-col items-center justify-center text-center transform transition-all duration-500">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 text-white group-hover:-translate-y-2 transition-transform duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Note Summary</h3>
-                
+
                 <div className="opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-in-out h-0 group-hover:h-auto overflow-hidden">
                   <p className="text-slate-200 text-sm leading-relaxed mt-2">
                     Instantly condense long lectures and heavy reading materials into bite-sized, easy-to-review key points.
@@ -217,13 +217,13 @@ const StudentDashboard = () => {
             <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-300">
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110" style={{ backgroundImage: `url(${heroImg1})` }} />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-teal-900/80 transition-colors duration-500" />
-              
+
               <div className="relative z-10 p-6 h-full flex flex-col items-center justify-center text-center transform transition-all duration-500">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 text-white group-hover:-translate-y-2 transition-transform duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Resource Finder</h3>
-                
+
                 <div className="opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-in-out h-0 group-hover:h-auto overflow-hidden">
                   <p className="text-slate-200 text-sm leading-relaxed mt-2">
                     Skip the endless scrolling and let our AI quickly locate the exact study materials, links, and documents relevant to your course.
@@ -236,13 +236,13 @@ const StudentDashboard = () => {
             <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-400">
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110" style={{ backgroundImage: `url(${heroImg2})` }} />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-purple-900/80 transition-colors duration-500" />
-              
+
               <div className="relative z-10 p-6 h-full flex flex-col items-center justify-center text-center transform transition-all duration-500">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 text-white group-hover:-translate-y-2 transition-transform duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Papers Generator</h3>
-                
+
                 <div className="opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-in-out h-0 group-hover:h-auto overflow-hidden">
                   <p className="text-slate-200 text-sm leading-relaxed mt-2">
                     Test your knowledge before the real exam by generating custom Q&A sets and practice papers based on your syllabus.
@@ -255,13 +255,13 @@ const StudentDashboard = () => {
             <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-500">
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110" style={{ backgroundImage: `url(${heroImg3})` }} />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-blue-900/80 transition-colors duration-500" />
-              
+
               <div className="relative z-10 p-6 h-full flex flex-col items-center justify-center text-center transform transition-all duration-500">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 text-white group-hover:-translate-y-2 transition-transform duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Time Table Gen</h3>
-                
+
                 <div className="opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-in-out h-0 group-hover:h-auto overflow-hidden">
                   <p className="text-slate-200 text-sm leading-relaxed mt-2">
                     Create a balanced, perfectly optimized study schedule tailored to your personal habits, upcoming deadlines, and exam dates.
@@ -276,18 +276,18 @@ const StudentDashboard = () => {
         {/* 4. CONTACT US SECTION */}
         <div className="container mx-auto px-6 mt-20 max-w-6xl mb-12">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] shadow-2xl p-8 md:p-14 text-center text-white relative overflow-hidden animate-in fade-in-up">
-            
+
             {/* Decorative background blur element */}
             <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none"></div>
-            
+
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4 relative z-10">How to Contact Us</h2>
             <p className="text-slate-300 text-lg mb-10 max-w-2xl mx-auto relative z-10">
               Got a question, facing a technical issue, or have a great idea to make the platform even better? We are always here to help! Reach out to our dedicated support team, and we will get back to you as quickly as possible.
             </p>
-            
+
             <div className="flex flex-col md:flex-row justify-center items-center gap-6 relative z-10">
-              
+
               {/* Email Contact */}
               <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer">
                 <div className="p-2 bg-indigo-500/30 rounded-full">
@@ -308,10 +308,15 @@ const StudentDashboard = () => {
               </div>
 
               {/* Direct Support Ticket - UPDATED */}
-              <button className="flex items-center gap-3 bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-4 rounded-2xl font-semibold text-sm cursor-pointer transition-colors shadow-lg shadow-indigo-500/30">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <Link
+                to="/contact"
+                className="flex items-center justify-center gap-3 bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-4 rounded-2xl font-semibold text-sm cursor-pointer transition-colors shadow-lg shadow-indigo-500/30 w-fit"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
                 Direct Support
-              </button>
+              </Link>
 
             </div>
           </div>

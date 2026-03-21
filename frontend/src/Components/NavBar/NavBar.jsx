@@ -84,7 +84,7 @@ const StudentNavbar = () => {
         </div>
 
         {/* Support Button */}
-        <NavLink to="/support">
+        <NavLink to="/contact">
           Support
         </NavLink>
 

@@ -45,9 +45,15 @@ const facultyRoutes = require('./Routes/Module Management/FacultyRoutes');
 const semesterRoutes = require('./Routes/Module Management/SemesterRoutes');
 const moduleRoutes = require('./Routes/Module Management/ModuleRoutes');
 
+// NEW: Contact Us Route
+const contactRoutes = require('./Routes/Support/ContactRoute.js'); 
+
 app.use('/api/faculties', facultyRoutes);
 app.use('/api/semesters', semesterRoutes);
 app.use('/api/modules', moduleRoutes);
+
+// NEW: Mount the Contact Us API
+app.use('/api/contact', contactRoutes);
 
 app.get('/', (req, res) => {
   res.send('LearnBuddy API is running...');
