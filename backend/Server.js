@@ -1,13 +1,15 @@
 const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
+
+// 1. THIS MUST BE CALLED IMMEDIATELY AFTER IMPORTING DOTENV!
+dotenv.config(); 
+
 const cors = require('cors');
 const connectDB = require('./db');
 const authRoutes = require('./Routes/User Management/UserRoute.js');
 const pastPaperRoutes = require('./Routes/pastPaper/pastPaperRoutes');
 const noteRoutes = require('./Routes/notes/noteRoutes');
-
-dotenv.config();
 
 const app = express();
 
