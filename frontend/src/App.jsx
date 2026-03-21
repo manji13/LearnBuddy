@@ -15,6 +15,22 @@ import QuizHistoryPage from './Pages/pastPaper/QuizHistoryPage.jsx';
 import AdminPastPaperPage from './Pages/pastPaper/AdminPastPaperPage.jsx';
 import NotesAiPage from './Pages/notes/NotesAiPage.jsx';
 
+import FacultyList from './Pages/Module Management/faculties/FacultyList.jsx';
+import FacultyForm from './Pages/Module Management/faculties/FacultyForm.jsx';
+import FacultyDetail from './Pages/Module Management/faculties/FacultyDetails.jsx';
+
+import SemesterList from './Pages/Module Management/semesters/SemesterList.jsx';
+import SemesterForm from './Pages/Module Management/semesters/SemesterForm.jsx';
+import SemesterDetail from './Pages/Module Management/semesters/SemesterDetails.jsx';
+
+import ModuleList from './Pages/Module Management/modules/ModuleList.Jsx';
+import ModuleForm from './Pages/Module Management/modules/ModuleForm.jsx';
+import ModuleDetail from './Pages/Module Management/modules/ModuleDetails.jsx';
+
+import StudentFaculties from './Pages/Module Management/faculties/Studentfaculties.jsx';
+import StudentSemesters from './Pages/Module Management/modules/Studentsemesters.jsx';
+import StudentModules from './Pages/Module Management/semesters/Studentmodules.jsx';
+
 
 function App() {
   return (
@@ -33,7 +49,26 @@ function App() {
 
 
 
+          {/* Faculties */}
+        <Route path="/faculties" element={<FacultyList />} />
+        <Route path="/faculties/new" element={<FacultyForm />} />
+        <Route path="/faculties/:id" element={<FacultyDetail />} />
+        <Route path="/faculties/:id/edit" element={<FacultyForm />} />
 
+        {/* Semesters */}
+        <Route path="/semesters" element={<SemesterList />} />
+        <Route path="/semesters/new" element={<SemesterForm />} />
+        <Route path="/semesters/:id" element={<SemesterDetail />} />
+        <Route path="/semesters/:id/edit" element={<SemesterForm />} />
+
+        {/* Modules */}
+        <Route path="/modules" element={<ModuleList />} />
+        <Route path="/modules/new" element={<ModuleForm />} />
+        <Route path="/modules/:id" element={<ModuleDetail />} />
+        <Route path="/modules/:id/edit" element={<ModuleForm />} />
+        <Route path="/student/faculties" element={<StudentFaculties />} />
+        <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
+        <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
 
           <Route path="/past-papers" element={<PastPaperPage />} />
           <Route path="/quiz-history" element={<QuizHistoryPage />} />

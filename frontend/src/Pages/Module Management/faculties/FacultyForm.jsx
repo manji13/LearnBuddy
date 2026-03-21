@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Sidebar from '../../../Components/ModuleManagement/Sidebar.jsx'
-import Navbar from '../../../Components/NavBar/NavBar.jsx'
+import EmployeeNavbar from '../../../Components/NavBar/employeeNavbar'; 
 
 const EMPTY = { name: '', code: '', description: '' }
 const inputCls = "w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
@@ -62,9 +61,9 @@ export default function FacultyForm() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      <Navbar />
+      <EmployeeNavbar />
       <div className="flex">
-        <Sidebar />
+       
         <main className="ml-56 flex-1 p-8">
           <div className="max-w-lg mx-auto">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
