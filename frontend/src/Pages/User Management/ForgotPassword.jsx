@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../../api/config';
 import logo from '../../assets/learnbuddy-logo.jpg';
 
 const ForgotPassword = () => {
+  // UI States
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Logic States
   const [step, setStep] = useState(1); // 1: Email & New Password, 2: OTP, 3: Success
   const [formData, setFormData] = useState({ email: '', newPassword: '', otp: '' });
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  
   const navigate = useNavigate();
+
+  // Initial Open Animation Effect
+  useEffect(() => {
+    const loadingTimer = setTimeout(() => {
+      setIsInitialLoading(false);
+      setTimeout(() => setIsMounted(true), 50);
+    }, 1500);
+
+    return () => clearTimeout(loadingTimer);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,7 +33,7 @@ const ForgotPassword = () => {
   // STEP 1: Send OTP to Email
   const handleRequestOtp = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
     
     try {
@@ -37,14 +53,14 @@ const ForgotPassword = () => {
     } catch (err) {
       setError(err.message);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   // STEP 2: Verify OTP and Update Password
   const handleVerifyAndReset = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
 
     try {
@@ -79,12 +95,13 @@ const ForgotPassword = () => {
     } catch (err) {
       setError(err.message);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="h-screen w-full bg-slate-200 relative flex items-center justify-center p-4 font-sans text-slate-800 overflow-hidden">
+      
       {/* Back Button */}
       <Link to="/login" className="absolute top-6 left-6 z-20 bg-white/70 backdrop-blur-md hover:bg-white text-slate-700 hover:text-indigo-600 p-2.5 rounded-full shadow-lg transition-all transform hover:scale-110">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -92,16 +109,30 @@ const ForgotPassword = () => {
         </svg>
       </Link>
 
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 backdrop-blur-sm">
-          <div className="w-16 h-16 border-4 border-indigo-200 rounded-full animate-spin border-t-indigo-600"></div>
+      {/* Initial Page Loading Animation (Matches Signin) */}
+      {isInitialLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white z-50 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative w-24 h-24">
+              <div className="absolute inset-0 border-4 border-indigo-200 rounded-full animate-spin border-t-indigo-600 border-r-indigo-600"></div>
+              <div className="absolute inset-2 border-4 border-transparent rounded-full animate-pulse border-t-teal-500"></div>
+              <img src={logo} alt="Logo" className="absolute inset-0 w-12 h-12 m-auto rounded-full object-cover border-2 border-indigo-300" />
+            </div>
+            <p className="text-lg font-semibold text-indigo-600 animate-pulse">Loading LearnBuddy...</p>
+          </div>
         </div>
       )}
 
-      {/* Main Card */}
-      <div className="z-10 w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 relative shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12),0_15px_30px_-10px_rgba(0,0,0,0.08)]">
+      {/* Main Card with Mount Animation */}
+      <div className={`z-10 w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 relative overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12),0_15px_30px_-10px_rgba(0,0,0,0.08)] transition-all duration-1000 ease-out transform ${isMounted ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'}`}>
         
+        {/* Form Submission Loading Overlay (Prevents clicking while processing) */}
+        {isSubmitting && step !== 3 && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm rounded-3xl">
+             <div className="w-16 h-16 border-4 border-indigo-200 rounded-full animate-spin border-t-indigo-600"></div>
+          </div>
+        )}
+
         {/* Step 3: Success Animation Overlay */}
         {step === 3 && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-md rounded-3xl transition-opacity duration-500">
@@ -160,7 +191,7 @@ const ForgotPassword = () => {
                 value={formData.otp} 
                 required 
                 onChange={handleChange} 
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-center text-xl tracking-widest font-bold bg-slate-50 hover:bg-white" 
+                className="w-full px-4 py-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-center text-2xl tracking-[0.5em] font-bold bg-slate-50 hover:bg-white" 
                 placeholder="000000" 
               />
             </div>
