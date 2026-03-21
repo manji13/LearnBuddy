@@ -38,6 +38,15 @@ app.use('/api/auth', authRoutes);
 app.use('/api/pastpapers', pastPaperRoutes);
 app.use('/api/notes', noteRoutes);
 
+// Module Management routes (faculties, semesters, modules)
+const facultyRoutes = require('./Routes/Module Management/FacultyRoutes');
+const semesterRoutes = require('./Routes/Module Management/SemesterRoutes');
+const moduleRoutes = require('./Routes/Module Management/ModuleRoutes');
+
+app.use('/api/faculties', facultyRoutes);
+app.use('/api/semesters', semesterRoutes);
+app.use('/api/modules', moduleRoutes);
+
 app.get('/', (req, res) => {
   res.send('LearnBuddy API is running...');
 });
