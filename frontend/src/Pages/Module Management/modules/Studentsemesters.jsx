@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
@@ -13,8 +14,8 @@ export default function StudentSemesters() {
 
   useEffect(() => {
     Promise.all([
-      axios.get(`http://localhost:5000/api/faculties/${facultyId}`),
-      axios.get('http://localhost:5000/api/semesters', { params: { faculty: facultyId } }),
+      axios.get(`${API_URL}/faculties/${facultyId}`),
+      axios.get(`${API_URL}/semesters`, { params: { faculty: facultyId } }),
     ])
       .then(([{ data: fd }, { data: sd }]) => {
         setFaculty(fd.data ?? fd)

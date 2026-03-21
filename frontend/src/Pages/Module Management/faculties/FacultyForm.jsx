@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import axios from 'axios'
@@ -19,7 +20,7 @@ export default function FacultyForm() {
 
   useEffect(() => {
     if (!isEdit) return
-    axios.get(`http://localhost:5000/api/faculties/${id}`)
+    axios.get(`${API_URL}/faculties/${id}`)
       .then(({ data }) => {
         const f = data.data ?? data
         setForm({ name: f.name, code: f.code, description: f.description || '' })
@@ -36,11 +37,11 @@ export default function FacultyForm() {
     setSaving(true)
     try {
       if (isEdit) {
-        await axios.put(`http://localhost:5000/api/faculties/${id}`, form)
+        await axios.put(`${API_URL}/faculties/${id}`, form)
         toast.success('Faculty updated')
         navigate(`/faculties/${id}`)
       } else {
-        const { data } = await axios.post('http://localhost:5000/api/faculties', form)
+        const { data } = await axios.post(`${API_URL}/faculties`, form)
         toast.success('Faculty created')
         // ✅ Go to the new faculty's detail page after creation
         navigate(`/faculties/${(data.data ?? data)._id}`)

@@ -1,3 +1,4 @@
+import API_URL from '../../../api/config';
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
@@ -33,8 +34,8 @@ export default function ModuleForm() {
     const init = async () => {
       try {
         const [{ data: fd }, { data: sd }] = await Promise.all([
-          axios.get('http://localhost:5000/api/faculties'),
-          axios.get('http://localhost:5000/api/semesters'),
+          axios.get(`${API_URL}/faculties`),
+          axios.get(`${API_URL}/semesters`),
         ])
         const fList = fd.data ?? fd
         const sList = sd.data ?? sd
@@ -47,7 +48,7 @@ export default function ModuleForm() {
         }
 
         if (isEdit) {
-          const { data: md } = await axios.get(`http://localhost:5000/api/modules/${id}`)
+          const { data: md } = await axios.get(`${API_URL}/modules/${id}`)
           const m = md.data ?? md
           const fid = m.faculty?._id || m.faculty
           setForm({
@@ -83,11 +84,11 @@ export default function ModuleForm() {
     setSaving(true)
     try {
       if (isEdit) {
-        await axios.put(`http://localhost:5000/api/modules/${id}`, form)
+        await axios.put(`${API_URL}/modules/${id}`, form)
         toast.success('Module updated')
         navigate(`/modules/${id}`)
       } else {
-        const { data } = await axios.post('http://localhost:5000/api/modules', form)
+        const { data } = await axios.post(`${API_URL}/modules`, form)
         toast.success('Module created')
         // ✅ After creating, go back to the semester's detail page if we came from one
         if (preselectedSemesterId) {

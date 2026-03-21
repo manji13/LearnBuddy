@@ -1,3 +1,4 @@
+import API_URL from '../../api/config';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../Components/NavBar/ProfileNavbar'; // Assuming this is your sidebar
@@ -30,7 +31,7 @@ const UserProfile = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/users/${userId}`);
+      const response = await fetch(`${API_URL}/auth/users/${userId}`);
       const data = await response.json();
       
       if (response.ok) {
@@ -75,7 +76,7 @@ const UserProfile = () => {
     setMessage({ text: 'Saving changes...', type: 'loading' });
 
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/users/${userId}`, {
+      const response = await fetch(`${API_URL}/auth/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
