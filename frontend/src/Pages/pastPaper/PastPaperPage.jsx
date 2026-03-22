@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
 function PastPaperPage() {
   const [pastPapers, setPastPapers] = useState([]);
   const [search, setSearch] = useState({ moduleName: '', semester: '', year: '' });
+  const [userRole, setUserRole] = useState(null);
   const [qaModalOpen, setQaModalOpen] = useState(false);
   const [qaLoading, setQaLoading] = useState(false);
   const [qaData, setQaData] = useState(null);
@@ -49,6 +50,12 @@ function PastPaperPage() {
       setError('Failed to load past papers');
     }
   };
+
+  // Read user role from localStorage so we can hide destructive actions for students
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    setUserRole(role);
+  }, []);
 
   // Support linking from module pages: /past-papers?moduleName=ABC
   useEffect(() => {
@@ -431,6 +438,15 @@ function PastPaperPage() {
                         >
                           {analysisLoading ? 'Analysing…' : 'Exam insights'}
                         </button>
+                        {userRole === 'Employee' || userRole === 'Admin' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(paper._id)}
+                            className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        ) : null}
                       </div>
                     </td>
                   </tr>
