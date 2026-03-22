@@ -167,12 +167,6 @@ function PastPaperPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModuleId, modules]);
 
-  const handleSearchChange = (e) => {
-    const { name, value } = e.target;
-    setSearch((prev) => ({ ...prev, [name]: value }));
-  };
-
-
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
     resetMessages();
@@ -343,6 +337,14 @@ function PastPaperPage() {
       });
   };
 
+  // Helper to make long analysis text easier to read
+  const truncateText = (text, maxLength = 120) => {
+    if (!text) return '';
+    const cleaned = String(text).replace(/\s+/g, ' ').trim();
+    if (cleaned.length <= maxLength) return cleaned;
+    return `${cleaned.slice(0, maxLength)}…`;
+  };
+
   // Derived dropdown options for guided selection
   const facultySemesters = selectedFaculty
     ? semesters.filter((s) => (s.faculty?._id || s.faculty) === selectedFaculty)
@@ -355,7 +357,7 @@ function PastPaperPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-8 px-4 sm:px-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100 py-8 px-4 sm:px-8">
       <div className="max-w-6xl mx-auto">
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -768,16 +770,14 @@ function PastPaperPage() {
               {Array.isArray(analysisData.topics) && analysisData.topics.length > 0 && (
                 <div className="mb-1">
                   <h4 className="text-sm font-semibold text-gray-900 mb-1">Main topics</h4>
-                  <div className="flex flex-wrap gap-1">
+                  <ul className="text-xs text-gray-800 space-y-1 max-h-40 overflow-y-auto pr-1">
                     {analysisData.topics.map((t, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-800 border border-violet-100"
-                      >
-                        {t}
-                      </span>
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-violet-400" />
+                        <span>{truncateText(t)}</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
             </div>

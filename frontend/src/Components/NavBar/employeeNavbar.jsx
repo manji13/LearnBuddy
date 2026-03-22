@@ -151,7 +151,7 @@ const EmployeeNavbar = () => {
               {isAnalysisOpen && (
                 <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 animate-fade-in-down origin-top-right">
                   <Link 
-                    to="/employee/users" 
+                    to="/users" 
                     className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                     onClick={() => setIsAnalysisOpen(false)}
                   >
