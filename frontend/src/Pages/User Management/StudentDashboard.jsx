@@ -195,7 +195,10 @@ const StudentDashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
             {/* AI Tool 1: Note Summary Generator */}
-            <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-200">
+            <Link
+              to="/notes-ai"
+              className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-200 block"
+            >
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110" style={{ backgroundImage: `url(${heroImg3})` }} />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-indigo-900/80 transition-colors duration-500" />
 
@@ -211,7 +214,7 @@ const StudentDashboard = () => {
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* AI Tool 2: Resource Finder */}
             <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-300">
@@ -233,7 +236,10 @@ const StudentDashboard = () => {
             </div>
 
             {/* AI Tool 3: Papers Generator */}
-            <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-400">
+            <Link
+              to="/past-papers"
+              className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-400 block"
+            >
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110" style={{ backgroundImage: `url(${heroImg2})` }} />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-purple-900/80 transition-colors duration-500" />
 
@@ -249,7 +255,7 @@ const StudentDashboard = () => {
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* AI Tool 4: Time Table Generator */}
             <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-500">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
@@ -25,14 +25,24 @@ function PastPaperPage() {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
 
+  const location = useLocation();
+
   const resetMessages = () => {
     setError('');
     setSuccess('');
   };
 
-  const fetchPastPapers = async () => {
+  const fetchPastPapers = async (moduleNameFilter) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/pastpapers`);
+      let url = `${API_BASE_URL}/api/pastpapers`;
+      const config = {};
+
+      if (moduleNameFilter) {
+        url = `${API_BASE_URL}/api/pastpapers/search`;
+        config.params = { moduleName: moduleNameFilter };
+      }
+
+      const res = await axios.get(url, config);
       setPastPapers(res.data.data || []);
     } catch (err) {
       console.error(err);
@@ -40,9 +50,18 @@ function PastPaperPage() {
     }
   };
 
+  // Support linking from module pages: /past-papers?moduleName=ABC
   useEffect(() => {
-    fetchPastPapers();
-  }, []);
+    const params = new URLSearchParams(location.search);
+    const moduleNameParam = params.get('moduleName');
+
+    if (moduleNameParam) {
+      setSearch((prev) => ({ ...prev, moduleName: moduleNameParam }));
+      fetchPastPapers(moduleNameParam);
+    } else {
+      fetchPastPapers();
+    }
+  }, [location.search]);
 
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
@@ -231,24 +250,26 @@ function PastPaperPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-8 px-4 sm:px-8">
       <div className="max-w-6xl mx-auto">
-        <header className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Past Papers Library</h1>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Past Papers</h1>
             <p className="mt-2 text-sm text-slate-600 max-w-xl">
-              Students can search past papers by module, semester, or year, download PDFs, and generate AI practice
-              questions for revision.
+              Search previous exam papers by module, semester, or year. Download PDFs or use AI to generate practice
+              questions and exam insights.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
-            <span>Student view</span>
-            <span className="mx-2 h-4 w-px bg-slate-200" />
+          <div className="flex items-center gap-3">
+            <span className="hidden text-xs font-medium text-slate-500 sm:inline-flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              Student workspace
+            </span>
             <Link
               to="/quiz-history"
-              className="rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:border-indigo-500 hover:text-indigo-600 hover:shadow-md transition"
             >
-              View Quiz History
+              Quiz history
             </Link>
           </div>
         </header>
@@ -267,108 +288,150 @@ function PastPaperPage() {
         )}
 
         {/* Search & Table (Student side) */}
-        <div className="bg-white rounded-xl shadow-md p-6 border border-slate-100">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">Past Papers</h2>
+        <div className="bg-white/90 rounded-2xl shadow-lg p-6 border border-slate-100">
+          <div className="flex flex-col gap-3 mb-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Browse past papers</h2>
+              <p className="mt-1 text-xs text-slate-500 max-w-md">
+                Use the filters below to narrow down by module, semester, or year.
+              </p>
+            </div>
+            <div className="text-xs text-slate-500 flex flex-col items-start md:items-end">
+              <span className="font-medium text-slate-700">
+                {pastPapers.length} paper{pastPapers.length === 1 ? '' : 's'} found
+              </span>
+              <span className="mt-0.5 text-[11px] text-slate-400">
+                AI questions and exam analysis are available for each paper.
+              </span>
+            </div>
+          </div>
 
-            <form className="flex flex-wrap gap-2" onSubmit={handleSearchSubmit}>
+          <form
+            className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
+            onSubmit={handleSearchSubmit}
+          >
+            <div className="flex flex-col">
+              <label className="text-xs font-medium text-slate-600 mb-1">Module</label>
               <input
                 type="text"
                 name="moduleName"
                 value={search.moduleName}
                 onChange={handleSearchChange}
-                placeholder="Module"
-                className="w-32 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="eg: Data Structures"
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
               />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-xs font-medium text-slate-600 mb-1">Semester</label>
               <input
                 type="text"
                 name="semester"
                 value={search.semester}
                 onChange={handleSearchChange}
-                placeholder="Semester"
-                className="w-28 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="eg: Semester 1"
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
               />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-xs font-medium text-slate-600 mb-1">Year</label>
               <input
                 type="number"
                 name="year"
                 value={search.year}
                 onChange={handleSearchChange}
-                placeholder="Year"
-                className="w-24 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="eg: 2024"
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
               />
-              <button
-                type="submit"
-                className="rounded-md bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700"
-              >
-                Search
-              </button>
+            </div>
+
+            <div className="flex gap-2 sm:justify-end">
               <button
                 type="button"
                 onClick={handleResetSearch}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="inline-flex flex-1 items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:flex-none"
               >
                 Reset
               </button>
-            </form>
-          </div>
+              <button
+                type="submit"
+                className="inline-flex flex-1 items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 sm:flex-none"
+              >
+                Search
+              </button>
+            </div>
+          </form>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
             <table className="min-w-full divide-y divide-slate-200 text-sm">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-100/80">
                 <tr>
-                  <th className="px-4 py-2 text-left font-medium text-slate-700">Title</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-700">Module</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-700">Semester</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-700">Year</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-700">Actions</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Title
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Module
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Semester
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Year
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
                 {pastPapers.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="px-4 py-6 text-center text-gray-500 text-sm">
-                      No past papers found.
+                    <td colSpan="5" className="px-4 py-8 text-center text-sm text-slate-500">
+                      No past papers match your filters. Try adjusting the module, semester, or year.
                     </td>
                   </tr>
                 )}
 
                 {pastPapers.map((paper) => (
-                  <tr key={paper._id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 text-gray-900">{paper.title}</td>
-                    <td className="px-4 py-2 text-gray-700">{paper.moduleName}</td>
-                    <td className="px-4 py-2 text-gray-700">{paper.semester}</td>
-                    <td className="px-4 py-2 text-gray-700">{paper.year}</td>
-                    <td className="px-4 py-2 space-x-2 whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => handleDownload(paper._id)}
-                        className="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        Download
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openDifficultyModal(paper._id)}
-                        className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-                        disabled={qaLoading}
-                      >
-                        {qaLoading ? 'Generating...' : 'Generate AI Questions'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAnalyseExam(paper._id)}
-                        className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-                        disabled={analysisLoading}
-                      >
-                        {analysisLoading ? 'Analysing...' : 'Analyse Paper'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(paper._id)}
-                        className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
+                  <tr key={paper._id} className="transition-colors hover:bg-slate-50/80">
+                    <td className="px-4 py-3 align-top">
+                      <p className="font-medium text-slate-900">{paper.title}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">ID: {paper._id.slice(-6)}</p>
+                    </td>
+                    <td className="px-4 py-3 align-top text-slate-700">{paper.moduleName}</td>
+                    <td className="px-4 py-3 align-top">
+                      <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-medium text-indigo-700">
+                        {paper.semester || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 align-top text-slate-700">{paper.year}</td>
+                    <td className="px-4 py-3 align-top whitespace-nowrap">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDownload(paper._id)}
+                          className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          Download
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openDifficultyModal(paper._id)}
+                          className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+                          disabled={qaLoading}
+                        >
+                          {qaLoading ? 'Generating questions…' : 'AI questions'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAnalyseExam(paper._id)}
+                          className="inline-flex items-center rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                          disabled={analysisLoading}
+                        >
+                          {analysisLoading ? 'Analysing…' : 'Exam insights'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -129,11 +129,19 @@ exports.deleteNote = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Note not found' });
     }
 
-    const filePath = path.join(__dirname, '..', '..', note.fileUrl);
-    if (fs.existsSync(filePath)) {
-      fs.unlink(filePath, (err) => {
-        if (err) console.error('Error deleting file:', err);
-      });
+    // Be defensive: if fileUrl is missing or invalid, still delete the DB record
+    if (note.fileUrl) {
+      try {
+        const filePath = path.join(__dirname, '..', '..', note.fileUrl);
+        if (fs.existsSync(filePath)) {
+          fs.unlink(filePath, (err) => {
+            if (err) console.error('Error deleting file:', err);
+          });
+        }
+      } catch (fileErr) {
+        console.error('Error resolving or deleting note file:', fileErr);
+        // continue; do not fail the whole request just because of file deletion
+      }
     }
 
     await Note.deleteOne({ _id: note._id });

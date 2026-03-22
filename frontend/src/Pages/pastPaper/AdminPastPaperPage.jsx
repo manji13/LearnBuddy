@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
@@ -16,15 +17,36 @@ function AdminPastPaperPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  // Dropdown data and selections for Faculty → Year → Semester → Module
+  const [faculties, setFaculties] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [modules, setModules] = useState([]);
+  const [selectedFaculty, setSelectedFaculty] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedSemesterId, setSelectedSemesterId] = useState('');
+  const [selectedModuleId, setSelectedModuleId] = useState('');
+
+  const location = useLocation();
+  const [moduleFilter, setModuleFilter] = useState('');
 
   const resetMessages = () => {
     setError('');
     setSuccess('');
+    setFieldErrors({});
   };
 
-  const fetchPastPapers = async () => {
+  const fetchPastPapers = async (moduleNameFilter) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/pastpapers`);
+      let res;
+      if (moduleNameFilter) {
+        res = await axios.get(`${API_BASE_URL}/api/pastpapers/search`, {
+          params: { moduleName: moduleNameFilter },
+        });
+      } else {
+        res = await axios.get(`${API_BASE_URL}/api/pastpapers`);
+      }
       setPastPapers(res.data.data || []);
     } catch (err) {
       console.error(err);
@@ -32,9 +54,112 @@ function AdminPastPaperPage() {
     }
   };
 
+  // Load faculties and semesters for dropdowns
   useEffect(() => {
-    fetchPastPapers();
+    const loadMeta = async () => {
+      try {
+        const [facRes, semRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/api/faculties`),
+          axios.get(`${API_BASE_URL}/api/semesters`),
+        ]);
+        setFaculties(facRes.data.data || facRes.data || []);
+        setSemesters(semRes.data.data || semRes.data || []);
+      } catch (err) {
+        console.error('Failed to load faculty/semester data', err);
+      }
+    };
+
+    loadMeta();
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const moduleNameFromQuery = params.get('moduleName') || '';
+
+    if (moduleNameFromQuery) {
+      setForm((prev) => ({ ...prev, moduleName: moduleNameFromQuery }));
+      setModuleFilter(moduleNameFromQuery);
+      fetchPastPapers(moduleNameFromQuery);
+    } else {
+      fetchPastPapers();
+    }
+  }, [location.search]);
+
+  // Reset dependent selections when faculty changes
+  useEffect(() => {
+    setSelectedYear('');
+    setSelectedSemesterId('');
+    setSelectedModuleId('');
+    setModules([]);
+    setForm((prev) => ({
+      ...prev,
+      moduleName: '',
+      semester: '',
+      year: '',
+    }));
+    setModuleFilter('');
+  }, [selectedFaculty]);
+
+  // Reset semester/module when year changes
+  useEffect(() => {
+    setSelectedSemesterId('');
+    setSelectedModuleId('');
+    setModules([]);
+    setForm((prev) => ({
+      ...prev,
+      moduleName: '',
+      semester: '',
+      year: selectedYear || '',
+    }));
+    setModuleFilter('');
+  }, [selectedYear]);
+
+  // When semester changes, update form semester/year and load modules for that semester
+  useEffect(() => {
+    const loadModulesForSemester = async () => {
+      try {
+        if (!selectedSemesterId) {
+          setModules([]);
+          setSelectedModuleId('');
+          setForm((prev) => ({ ...prev, moduleName: '', semester: '' }));
+          setModuleFilter('');
+          return;
+        }
+
+        const semObj = semesters.find((s) => s._id === selectedSemesterId);
+        setForm((prev) => ({
+          ...prev,
+          semester: semObj ? `Semester ${semObj.semester}` : '',
+          year: semObj ? semObj.year : prev.year,
+          moduleName: '',
+        }));
+        setModuleFilter('');
+
+        const res = await axios.get(`${API_BASE_URL}/api/modules`, {
+          params: { semester: selectedSemesterId },
+        });
+        setModules(res.data.data || res.data || []);
+      } catch (err) {
+        console.error('Failed to load modules for semester', err);
+      }
+    };
+
+    loadModulesForSemester();
+  }, [selectedSemesterId, semesters]);
+
+  // When module changes, update form.moduleName and table filter
+  useEffect(() => {
+    if (!selectedModuleId) {
+      setForm((prev) => ({ ...prev, moduleName: '' }));
+      setModuleFilter('');
+      return;
+    }
+
+    const modObj = modules.find((m) => m._id === selectedModuleId);
+    const name = modObj?.moduleName || '';
+    setForm((prev) => ({ ...prev, moduleName: name }));
+    setModuleFilter(name);
+  }, [selectedModuleId, modules]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -49,13 +174,35 @@ function AdminPastPaperPage() {
     e.preventDefault();
     resetMessages();
 
+    const newErrors = {};
+
+    if (!form.title || !form.title.trim()) {
+      newErrors.title = 'Title is required';
+    }
+    if (!selectedFaculty) {
+      newErrors.faculty = 'Faculty is required';
+    }
+    if (!selectedYear) {
+      newErrors.year = 'Year is required';
+    }
+    if (!selectedSemesterId) {
+      newErrors.semesterSelect = 'Semester is required';
+    }
+    if (!selectedModuleId) {
+      newErrors.module = 'Module is required';
+    }
     if (!file) {
-      setError('Please select a PDF file');
-      return;
+      newErrors.file = 'PDF file is required';
     }
 
-    if (!form.title || !form.moduleName || !form.semester || !form.year) {
-      setError('Please fill all required fields');
+    // Optional lecturer name, but must not contain numbers
+    if (form.uploadedBy && /[0-9]/.test(form.uploadedBy)) {
+      newErrors.uploadedBy = 'Lecturer name cannot contain numbers';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors);
+      setError('Please fill all required fields before uploading.');
       return;
     }
 
@@ -77,7 +224,7 @@ function AdminPastPaperPage() {
       setSuccess('Past paper uploaded successfully');
       setForm({ title: '', moduleName: '', semester: '', year: '', uploadedBy: '' });
       setFile(null);
-      await fetchPastPapers();
+      await fetchPastPapers(moduleFilter || undefined);
     } catch (err) {
       console.error(err);
       const message = err.response?.data?.message || 'Failed to upload past paper';
@@ -94,7 +241,7 @@ function AdminPastPaperPage() {
     try {
       await axios.delete(`${API_BASE_URL}/api/pastpapers/${id}`);
       setSuccess('Past paper deleted successfully');
-      await fetchPastPapers();
+      await fetchPastPapers(moduleFilter || undefined);
     } catch (err) {
       console.error(err);
       const message = err.response?.data?.message || 'Failed to delete past paper';
@@ -105,6 +252,17 @@ function AdminPastPaperPage() {
   const handleDownload = (id) => {
     window.open(`${API_BASE_URL}/api/pastpapers/download/${id}`, '_blank');
   };
+
+  // Derived dropdown options
+  const facultySemesters = selectedFaculty
+    ? semesters.filter((s) => (s.faculty?._id || s.faculty) === selectedFaculty)
+    : [];
+
+  const yearOptions = Array.from(new Set(facultySemesters.map((s) => s.year))).sort((a, b) => a - b);
+
+  const filteredSemesters = facultySemesters.filter((s) =>
+    selectedYear ? String(s.year) === String(selectedYear) : true
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-8">
@@ -153,45 +311,103 @@ function AdminPastPaperPage() {
                 name="title"
                 value={form.title}
                 onChange={handleInputChange}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  fieldErrors.title ? 'border-red-400' : 'border-gray-300'
+                }`}
                 placeholder="e.g. CS101 Midterm 2023"
               />
+              {fieldErrors.title && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.title}</p>
+              )}
             </div>
 
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Module Name *</label>
-              <input
-                type="text"
-                name="moduleName"
-                value={form.moduleName}
-                onChange={handleInputChange}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. Computer Networks"
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Semester *</label>
-              <input
-                type="text"
-                name="semester"
-                value={form.semester}
-                onChange={handleInputChange}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. Semester 1"
-              />
+              <label className="text-sm font-medium text-gray-700 mb-1">Faculty *</label>
+              <select
+                value={selectedFaculty}
+                onChange={(e) => setSelectedFaculty(e.target.value)}
+                className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
+                  fieldErrors.faculty ? 'border-red-400' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select faculty</option>
+                {faculties.map((f) => (
+                  <option key={f._id} value={f._id}>
+                    {f.name} ({f.code})
+                  </option>
+                ))}
+              </select>
+              {fieldErrors.faculty && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.faculty}</p>
+              )}
             </div>
 
             <div className="flex flex-col">
               <label className="text-sm font-medium text-gray-700 mb-1">Year *</label>
-              <input
-                type="number"
-                name="year"
-                value={form.year}
-                onChange={handleInputChange}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. 2024"
-              />
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                disabled={!selectedFaculty || yearOptions.length === 0}
+                className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-400 ${
+                  fieldErrors.year ? 'border-red-400' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select year</option>
+                {yearOptions.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+              {fieldErrors.year && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.year}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Semester *</label>
+              <select
+                value={selectedSemesterId}
+                onChange={(e) => setSelectedSemesterId(e.target.value)}
+                disabled={!selectedFaculty || !selectedYear}
+                className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-400 ${
+                  fieldErrors.semesterSelect ? 'border-red-400' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select semester</option>
+                {filteredSemesters.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    Semester {s.semester}
+                  </option>
+                ))}
+              </select>
+              {fieldErrors.semesterSelect && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.semesterSelect}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Module Name *</label>
+              <select
+                value={selectedModuleId}
+                onChange={(e) => setSelectedModuleId(e.target.value)}
+                disabled={!selectedSemesterId || modules.length === 0}
+                className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-400 ${
+                  fieldErrors.module ? 'border-red-400' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select module</option>
+                {modules.map((m) => (
+                  <option key={m._id} value={m._id}>
+                    {m.moduleNumber} 
+                    {' - '} 
+                    {m.moduleName}
+                  </option>
+                ))}
+              </select>
+              {fieldErrors.module && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.module}</p>
+              )}
             </div>
 
             <div className="flex flex-col">
@@ -201,9 +417,14 @@ function AdminPastPaperPage() {
                 name="uploadedBy"
                 value={form.uploadedBy}
                 onChange={handleInputChange}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  fieldErrors.uploadedBy ? 'border-red-400' : 'border-gray-300'
+                }`}
                 placeholder="Lecturer name"
               />
+              {fieldErrors.uploadedBy && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.uploadedBy}</p>
+              )}
             </div>
 
             <div className="flex flex-col">
@@ -212,8 +433,13 @@ function AdminPastPaperPage() {
                 type="file"
                 accept="application/pdf"
                 onChange={handleFileChange}
-                className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+                className={`block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200 ${
+                  fieldErrors.file ? 'border border-red-400 rounded-md' : ''
+                }`}
               />
+              {fieldErrors.file && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.file}</p>
+              )}
             </div>
 
             <div className="md:col-span-2 flex justify-end mt-2">

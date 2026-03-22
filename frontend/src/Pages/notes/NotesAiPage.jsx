@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
@@ -29,15 +30,26 @@ function NotesAiPage() {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(null);
 
+  const [userRole, setUserRole] = useState(null);
+  const location = useLocation();
+
   const resetMessages = () => {
     setError('');
     setSuccess('');
   };
 
-  const fetchNotes = async () => {
+  const fetchNotes = async (moduleNameFilter) => {
     try {
       setLoadingList(true);
-      const res = await axios.get(`${API_BASE_URL}/api/notes`);
+      let url = `${API_BASE_URL}/api/notes`;
+      const config = {};
+
+      if (moduleNameFilter) {
+        url = `${API_BASE_URL}/api/notes/search`;
+        config.params = { moduleName: moduleNameFilter };
+      }
+
+      const res = await axios.get(url, config);
       setNotes(res.data.data || []);
     } catch (err) {
       console.error(err);
@@ -47,9 +59,24 @@ function NotesAiPage() {
     }
   };
 
+  // Read user role from localStorage to control delete visibility
   useEffect(() => {
-    fetchNotes();
+    const role = localStorage.getItem('userRole');
+    setUserRole(role);
   }, []);
+
+  // Support linking from module pages: /notes-ai?moduleName=ABC
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const moduleNameParam = params.get('moduleName');
+
+    if (moduleNameParam) {
+      setForm((prev) => ({ ...prev, moduleName: moduleNameParam }));
+      fetchNotes(moduleNameParam);
+    } else {
+      fetchNotes();
+    }
+  }, [location.search]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -400,13 +427,15 @@ function NotesAiPage() {
                         >
                           {aiLoading ? 'Processing...' : 'AI Questions'}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(note._id)}
-                          className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
+                        {userRole === 'Employee' || userRole === 'Admin' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(note._id)}
+                            className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        ) : null}
                       </td>
                     </tr>
                   ))}
