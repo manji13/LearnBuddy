@@ -7,7 +7,6 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
 function PastPaperPage() {
   const [pastPapers, setPastPapers] = useState([]);
   const [search, setSearch] = useState({ moduleName: '', semester: '', year: '' });
-  const [userRole, setUserRole] = useState(null);
   const [qaModalOpen, setQaModalOpen] = useState(false);
   const [qaLoading, setQaLoading] = useState(false);
   const [qaData, setQaData] = useState(null);
@@ -25,6 +24,15 @@ function PastPaperPage() {
   const [analysisModalOpen, setAnalysisModalOpen] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
+
+  // Guided filters: Faculty → Year → Semester → Module
+  const [faculties, setFaculties] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [modules, setModules] = useState([]);
+  const [selectedFaculty, setSelectedFaculty] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedSemesterId, setSelectedSemesterId] = useState('');
+  const [selectedModuleId, setSelectedModuleId] = useState('');
 
   const location = useLocation();
 
@@ -51,10 +59,22 @@ function PastPaperPage() {
     }
   };
 
-  // Read user role from localStorage so we can hide destructive actions for students
+  // Load faculties and semesters for structured filters
   useEffect(() => {
-    const role = localStorage.getItem('userRole');
-    setUserRole(role);
+    const loadMeta = async () => {
+      try {
+        const [facRes, semRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/api/faculties`),
+          axios.get(`${API_BASE_URL}/api/semesters`),
+        ]);
+        setFaculties(facRes.data.data || facRes.data || []);
+        setSemesters(semRes.data.data || semRes.data || []);
+      } catch (err) {
+        console.error('Failed to load faculty/semester data', err);
+      }
+    };
+
+    loadMeta();
   }, []);
 
   // Support linking from module pages: /past-papers?moduleName=ABC
@@ -69,6 +89,83 @@ function PastPaperPage() {
       fetchPastPapers();
     }
   }, [location.search]);
+
+  // When faculty changes, clear deeper selections and show all papers again
+  useEffect(() => {
+    setSelectedYear('');
+    setSelectedSemesterId('');
+    setSelectedModuleId('');
+    setModules([]);
+    setSearch((prev) => ({ ...prev, moduleName: '', semester: '', year: '' }));
+    fetchPastPapers();
+  }, [selectedFaculty]);
+
+  // When year changes, clear semester/module selections
+  useEffect(() => {
+    setSelectedSemesterId('');
+    setSelectedModuleId('');
+    setModules([]);
+    setSearch((prev) => ({ ...prev, semester: '', year: selectedYear || prev.year, moduleName: '' }));
+  }, [selectedYear]);
+
+  // When semester changes, load modules for that semester and update semester/year in search
+  useEffect(() => {
+    const loadModulesForSemester = async () => {
+      try {
+        if (!selectedSemesterId) {
+          setModules([]);
+          setSelectedModuleId('');
+          setSearch((prev) => ({ ...prev, semester: '', moduleName: '' }));
+          return;
+        }
+
+        const semObj = semesters.find((s) => s._id === selectedSemesterId);
+        setSearch((prev) => ({
+          ...prev,
+          semester: semObj ? `Semester ${semObj.semester}` : '',
+          year: semObj ? semObj.year : prev.year,
+          moduleName: '',
+        }));
+
+        const res = await axios.get(`${API_BASE_URL}/api/modules`, {
+          params: { semester: selectedSemesterId },
+        });
+        setModules(res.data.data || res.data || []);
+      } catch (err) {
+        console.error('Failed to load modules for semester', err);
+      }
+    };
+
+    loadModulesForSemester();
+  }, [selectedSemesterId, semesters]);
+
+  // When module changes, update moduleName in search and fetch matching past papers
+  useEffect(() => {
+    const applyModuleFilter = async () => {
+      if (!selectedModuleId) {
+        setSearch((prev) => ({ ...prev, moduleName: '' }));
+        await fetchPastPapers();
+        return;
+      }
+
+      const modObj = modules.find((m) => m._id === selectedModuleId);
+      const name = modObj?.moduleName || '';
+      setSearch((prev) => ({ ...prev, moduleName: name }));
+
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/pastpapers/search`, {
+          params: { moduleName: name, semester: search.semester || undefined, year: search.year || undefined },
+        });
+        setPastPapers(res.data.data || []);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load past papers for selected module');
+      }
+    };
+
+    applyModuleFilter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedModuleId, modules]);
 
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
@@ -96,22 +193,12 @@ function PastPaperPage() {
 
   const handleResetSearch = async () => {
     setSearch({ moduleName: '', semester: '', year: '' });
+    setSelectedFaculty('');
+    setSelectedYear('');
+    setSelectedSemesterId('');
+    setSelectedModuleId('');
+    setModules([]);
     await fetchPastPapers();
-  };
-
-  const handleDelete = async (id) => {
-    resetMessages();
-    if (!window.confirm('Are you sure you want to delete this past paper?')) return;
-
-    try {
-      await axios.delete(`${API_BASE_URL}/api/pastpapers/${id}`);
-      setSuccess('Past paper deleted successfully');
-      await fetchPastPapers();
-    } catch (err) {
-      console.error(err);
-      const message = err.response?.data?.message || 'Failed to delete past paper';
-      setError(message);
-    }
   };
 
   const handleDownload = (id) => {
@@ -256,6 +343,17 @@ function PastPaperPage() {
       });
   };
 
+  // Derived dropdown options for guided selection
+  const facultySemesters = selectedFaculty
+    ? semesters.filter((s) => (s.faculty?._id || s.faculty) === selectedFaculty)
+    : [];
+
+  const yearOptions = Array.from(new Set(facultySemesters.map((s) => s.year))).sort((a, b) => a - b);
+
+  const filteredSemesters = facultySemesters.filter((s) =>
+    selectedYear ? String(s.year) === String(selectedYear) : true
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-8 px-4 sm:px-8">
       <div className="max-w-6xl mx-auto">
@@ -300,7 +398,7 @@ function PastPaperPage() {
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Browse past papers</h2>
               <p className="mt-1 text-xs text-slate-500 max-w-md">
-                Use the filters below to narrow down by module, semester, or year.
+                Start by choosing your faculty, year, semester and module to see only the most relevant papers.
               </p>
             </div>
             <div className="text-xs text-slate-500 flex flex-col items-start md:items-end">
@@ -314,43 +412,74 @@ function PastPaperPage() {
           </div>
 
           <form
-            className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
+            className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
             onSubmit={handleSearchSubmit}
           >
             <div className="flex flex-col">
-              <label className="text-xs font-medium text-slate-600 mb-1">Module</label>
-              <input
-                type="text"
-                name="moduleName"
-                value={search.moduleName}
-                onChange={handleSearchChange}
-                placeholder="eg: Data Structures"
-                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-xs font-medium text-slate-600 mb-1">Semester</label>
-              <input
-                type="text"
-                name="semester"
-                value={search.semester}
-                onChange={handleSearchChange}
-                placeholder="eg: Semester 1"
-                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
-              />
+              <label className="text-xs font-medium text-slate-600 mb-1">Faculty</label>
+              <select
+                value={selectedFaculty}
+                onChange={(e) => setSelectedFaculty(e.target.value)}
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
+              >
+                <option value="">All faculties</option>
+                {faculties.map((f) => (
+                  <option key={f._id} value={f._id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex flex-col">
               <label className="text-xs font-medium text-slate-600 mb-1">Year</label>
-              <input
-                type="number"
-                name="year"
-                value={search.year}
-                onChange={handleSearchChange}
-                placeholder="eg: 2024"
-                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
-              />
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
+                disabled={!selectedFaculty}
+              >
+                <option value="">All years</option>
+                {yearOptions.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-xs font-medium text-slate-600 mb-1">Semester</label>
+              <select
+                value={selectedSemesterId}
+                onChange={(e) => setSelectedSemesterId(e.target.value)}
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
+                disabled={!selectedFaculty}
+              >
+                <option value="">All semesters</option>
+                {filteredSemesters.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    Semester {s.semester} — {s.year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-xs font-medium text-slate-600 mb-1">Module</label>
+              <select
+                value={selectedModuleId}
+                onChange={(e) => setSelectedModuleId(e.target.value)}
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
+                disabled={!selectedSemesterId}
+              >
+                <option value="">All modules</option>
+                {modules.map((m) => (
+                  <option key={m._id} value={m._id}>
+                    {m.moduleName}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex gap-2 sm:justify-end">
@@ -438,15 +567,6 @@ function PastPaperPage() {
                         >
                           {analysisLoading ? 'Analysing…' : 'Exam insights'}
                         </button>
-                        {userRole === 'Employee' || userRole === 'Admin' ? (
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(paper._id)}
-                            className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
-                          >
-                            Delete
-                          </button>
-                        ) : null}
                       </div>
                     </td>
                   </tr>

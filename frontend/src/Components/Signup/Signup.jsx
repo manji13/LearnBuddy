@@ -25,6 +25,15 @@ const Signup = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [captchaToken, setCaptchaToken] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    campus: '',
+    faculty: '',
+    password: '',
+    confirmPassword: ''
+  });
 
   useEffect(() => {
     const loadingTimer = setTimeout(() => {
@@ -36,7 +45,9 @@ const Signup = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const handleImageChange = (e) => {
@@ -55,8 +66,52 @@ const Signup = () => {
     e.preventDefault();
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match!');
+    const errors = {};
+
+    const trimmedName = formData.fullName.trim();
+    if (!trimmedName) {
+      errors.fullName = 'Full name is required.';
+    } else if (!/^[A-Za-z\s]+$/.test(trimmedName)) {
+      errors.fullName = 'Full name should contain only letters and spaces.';
+    }
+
+    const trimmedEmail = formData.email.trim();
+    if (!trimmedEmail) {
+      errors.email = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      errors.email = 'Please enter a valid email address.';
+    }
+
+    const trimmedPhone = formData.phoneNumber.trim();
+    if (!trimmedPhone) {
+      errors.phoneNumber = 'Phone number is required.';
+    } else if (!/^[0-9+\-\s]{7,15}$/.test(trimmedPhone)) {
+      errors.phoneNumber = 'Please enter a valid phone number.';
+    }
+
+    if (!formData.campus) {
+      errors.campus = 'Campus is required.';
+    }
+
+    if (!formData.faculty) {
+      errors.faculty = 'Faculty is required.';
+    }
+
+    if (!formData.password) {
+      errors.password = 'Password is required.';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters.';
+    }
+
+    if (!formData.confirmPassword) {
+      errors.confirmPassword = 'Please confirm your password.';
+    } else if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors((prev) => ({ ...prev, ...errors }));
+      setError('Please fix the highlighted fields.');
       return;
     }
 
@@ -174,22 +229,57 @@ const Signup = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Full Name</label>
-              <input type="text" name="fullName" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="John Doe" />
+              <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.fullName ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+                placeholder="John Doe"
+              />
+              {fieldErrors.fullName && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Email</label>
-              <input type="email" name="email" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="john@example.com" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.email ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+                placeholder="john@example.com"
+              />
+              {fieldErrors.email && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Phone Number</label>
-              <input type="text" name="phoneNumber" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="+1 234 567 8900" />
+              <input
+                type="text"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.phoneNumber ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+                placeholder="+1 234 567 8900"
+              />
+              {fieldErrors.phoneNumber && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.phoneNumber}</p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Campus</label>
-              <select name="campus" required onChange={handleChange} value={formData.campus} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white">
+              <select
+                name="campus"
+                value={formData.campus}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.campus ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+              >
                 <option value="" disabled>Select Campus</option>
                 <option value="SLIIT - Malabe">SLIIT - Malabe</option>
                 <option value="SLIIT - Kandy">SLIIT - Kandy</option>
@@ -198,30 +288,61 @@ const Signup = () => {
                 <option value="SLIIT - Kurunegala">SLIIT - Kurunegala</option>
                 <option value="Other">Other</option>
               </select>
+              {fieldErrors.campus && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.campus}</p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Faculty</label>
-              <select name="faculty" required onChange={handleChange} value={formData.faculty} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white">
+              <select
+                name="faculty"
+                value={formData.faculty}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.faculty ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+              >
                 <option value="" disabled>Select Faculty</option>
                 <option value="Computing">Computing</option>
                 <option value="Engineering">Engineering</option>
                 <option value="Management">Management</option>
                 <option value="Human Science">Human Science</option>
               </select>
+              {fieldErrors.faculty && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.faculty}</p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Password</label>
-              <input type="password" name="password" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="••••••••" />
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.password ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+                placeholder="••••••••"
+              />
+              {fieldErrors.password && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Confirm Password</label>
-              <input type="password" name="confirmPassword" required onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white" placeholder="••••••••" />
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.confirmPassword ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+                placeholder="••••••••"
+              />
+              {fieldErrors.confirmPassword && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p>
+              )}
             </div>
           </div>
 
