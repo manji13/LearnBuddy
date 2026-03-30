@@ -12,6 +12,7 @@ const authRoutes = require('./Routes/User Management/UserRoute.js');
 const facultyRoutes = require('./Routes/Module Management/FacultyRoutes');
 const semesterRoutes = require('./Routes/Module Management/SemesterRoutes');
 const moduleRoutes = require('./Routes/Module Management/ModuleRoutes');
+const timeTableRoutes = require('./Routes/Time Table Management/TimeTableRoutes');
 
 const app = express();
 
@@ -52,6 +53,9 @@ app.get('/', (req, res) => {
 app.use('/api/faculties', facultyRoutes);
 app.use('/api/semesters', semesterRoutes);
 app.use('/api/modules', moduleRoutes);
+
+// TimeTable Routes
+app.use('/api/timetable', timeTableRoutes);
 
 // Define the port
 const PORT = process.env.port || process.env.PORT || 8080;

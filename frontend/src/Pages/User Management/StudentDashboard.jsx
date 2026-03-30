@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../Components/NavBar/NavBar.jsx';
 
 // Import your images directly from the assets folder
@@ -8,6 +9,7 @@ import heroImg3 from '../../assets/Signin_img3.jpg';
 import logo from '../../assets/learnbuddy-logo.jpg';
 
 const StudentDashboard = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [showContent, setShowContent] = useState(false);
   const backgroundImages = [heroImg1, heroImg2, heroImg3];
@@ -252,7 +254,10 @@ const StudentDashboard = () => {
             </div>
 
             {/* AI Tool 4: Time Table Generator */}
-            <div className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-500">
+            <div 
+              onClick={() => navigate('/timetable-generator')}
+              className="relative group overflow-hidden rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 h-[320px] cursor-pointer animate-in fade-in-up animation-delay-500"
+            >
               <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110" style={{ backgroundImage: `url(${heroImg3})` }} />
               <div className="absolute inset-0 bg-slate-900/60 group-hover:bg-blue-900/80 transition-colors duration-500" />
               

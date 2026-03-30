@@ -191,7 +191,10 @@ const HomePage = () => {
             </div>
 
             {/* Feature 5: Time Table Generator */}
-            <div className="group cursor-pointer flex flex-col items-center rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-8 text-center shadow-md transition-all duration-500 hover:-translate-y-4 hover:shadow-2xl hover:border-indigo-300 hover:bg-indigo-50/80 animate-in fade-in-up duration-700 fill-mode-both" style={{ animationDelay: '0.5s' }}>
+            <div 
+              onClick={() => navigate('/timetable-generator')}
+              className="group cursor-pointer flex flex-col items-center rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-8 text-center shadow-md transition-all duration-500 hover:-translate-y-4 hover:shadow-2xl hover:border-indigo-300 hover:bg-indigo-50/80 animate-in fade-in-up duration-700 fill-mode-both" style={{ animationDelay: '0.5s' }}
+            >
               <div className="mb-5 h-16 w-16 rounded-full bg-gradient-to-br from-teal-100 to-indigo-100 flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:rotate-12">
                 <span className="text-3xl transform group-hover:scale-110 transition-transform duration-300">⏱️</span>
               </div>
