@@ -236,28 +236,27 @@ exports.deleteTimeTable = async (req, res) => {
   }
 };
 
-// Update block status (Completed/Pending)
+// Update block details (Status, TimeSlot, Subject)
 exports.updateBlockStatus = async (req, res) => {
   try {
     const { id, blockId } = req.params;
-    const { status } = req.body;
+    const { status, timeSlot, subject } = req.body;
     
-    // Ignore updates to break blocks
     const timeTableCheck = await TimeTable.findOne({ _id: id, "generatedSchedule._id": blockId });
-    if (timeTableCheck) {
-      const block = timeTableCheck.generatedSchedule.id(blockId);
-      if (block && block.subject.includes('Break')) {
-          return res.status(200).json(timeTableCheck);
-      }
-    }
+    if (!timeTableCheck) return res.status(404).json({ message: 'Block not found' });
+
+    // Ensure we don't accidentally wipe status if only updating time
+    const updateFields = {};
+    if (status) updateFields["generatedSchedule.$.status"] = status;
+    if (timeSlot) updateFields["generatedSchedule.$.timeSlot"] = timeSlot;
+    if (subject) updateFields["generatedSchedule.$.subject"] = subject;
 
     const timeTable = await TimeTable.findOneAndUpdate(
       { _id: id, "generatedSchedule._id": blockId },
-      { $set: { "generatedSchedule.$.status": status } },
+      { $set: updateFields },
       { new: true }
     );
     
-    if (!timeTable) return res.status(404).json({ message: 'Block not found' });
     res.status(200).json(timeTable);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });

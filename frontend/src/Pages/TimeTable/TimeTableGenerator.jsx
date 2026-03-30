@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import API_URL from '../../api/config';
-import Navbar from '../../Components/NavBar/NavBar';
+import Navbar from '../../Components/NavBar/NavBar'; 
 
 const TimeTableGenerator = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [generatedSchedule, setGeneratedSchedule] = useState(null);
-  const [userId] = useState('64bd2c9b4e3f4a2b9c8d1e7f');
+  const [userId] = useState(localStorage.getItem('userId') || '64bd2c9b4e3f4a2b9c8d1e7f'); 
 
   const [formData, setFormData] = useState({
     examName: '',
@@ -20,7 +20,7 @@ const TimeTableGenerator = () => {
     prioritizeDifficult: true,
     scheduleType: 'Daily',
     unavailableDays: [],
-    unavailableTimeSlots: [], // New state for specific busy blocks
+    unavailableTimeSlots: [],
     minBreakDuration: 15,
     energyLevel: 'Medium',
     studyPreference: 'Mixed'
@@ -68,7 +68,6 @@ const TimeTableGenerator = () => {
     setFormData(prev => ({ ...prev, subjects: newSubjects }));
   };
 
-  // Specific Time Slot Handlers
   const addUnavailableTimeSlot = () => {
     setFormData(prev => ({
       ...prev,
@@ -111,28 +110,22 @@ const TimeTableGenerator = () => {
     }
   };
 
-  const handleStatusToggle = async (blockId, currentStatus) => {
+  const handleReschedule = async () => {
     if (!generatedSchedule || !generatedSchedule._id) return;
     try {
-      const newStatus = currentStatus === 'Pending' ? 'Completed' : 'Pending';
-      const res = await axios.put(`${API_URL}/timetable/${generatedSchedule._id}/block/${blockId}`, { status: newStatus });
-      setGeneratedSchedule(res.data);
-      toast.success(`Block marked as ${newStatus}`);
+      if (window.confirm("Are you sure you want to discard this timetable and start over?")) {
+        await axios.delete(`${API_URL}/timetable/${generatedSchedule._id}`);
+        setGeneratedSchedule(null);
+        toast.success("Timetable discarded. Let's create a new one!");
+      }
     } catch (error) {
-      toast.error('Failed to update status');
+      toast.error('Failed to reschedule');
     }
   };
 
-  const handleRecalculate = async () => {
-    if (!generatedSchedule || !generatedSchedule._id) return;
-    toast.loading('Recalculating missed blocks...', { id: 'recalc' });
-    try {
-      const res = await axios.post(`${API_URL}/timetable/${generatedSchedule._id}/recalculate`);
-      setGeneratedSchedule(res.data);
-      toast.success('Schedule optimized & redistributed!', { id: 'recalc' });
-    } catch (error) {
-      toast.error('Failed to recalculate', { id: 'recalc' });
-    }
+  const handleSaveToProfile = () => {
+    toast.success('Timetable saved successfully!');
+    navigate('/profile/timetable');
   };
 
   const handleExport = () => {
@@ -140,12 +133,29 @@ const TimeTableGenerator = () => {
     window.open(`${API_URL}/timetable/${generatedSchedule._id}/export`, '_blank');
   };
 
+  const groupedSchedule = useMemo(() => {
+    if (!generatedSchedule || !generatedSchedule.generatedSchedule) return [];
+    const groups = {};
+    generatedSchedule.generatedSchedule.forEach(block => {
+      const dateStr = new Date(block.date).toLocaleDateString();
+      if (!groups[dateStr]) {
+        groups[dateStr] = {
+          date: block.date,
+          dayName: block.dayName,
+          blocks: []
+        };
+      }
+      groups[dateStr].blocks.push(block);
+    });
+    return Object.values(groups);
+  }, [generatedSchedule]);
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-20">
       <Navbar />
 
       <div className="container mx-auto px-6 max-w-5xl mt-10">
-        <button
+        <button 
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-indigo-600 font-medium hover:text-indigo-800 transition-colors mb-6"
         >
@@ -153,7 +163,6 @@ const TimeTableGenerator = () => {
         </button>
 
         <div className="text-center mb-10 animate-in fade-in-down">
-
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
             <span className="bg-gradient-to-r from-indigo-600 to-teal-500 bg-clip-text text-transparent">Time Table Generator</span>
           </h1>
@@ -170,91 +179,74 @@ const TimeTableGenerator = () => {
                 <p className="text-slate-500">For: <span className="font-semibold text-indigo-600">{generatedSchedule.examName}</span></p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={handleRecalculate}
-                  className="px-4 py-2 bg-rose-50 text-rose-600 font-medium hover:bg-rose-100 rounded-xl transition"
+                <button 
+                  onClick={handleSaveToProfile}
+                  className="px-5 py-2.5 bg-indigo-600 text-white font-bold hover:bg-indigo-700 rounded-xl shadow-md transition-all hover:-translate-y-0.5"
                 >
-                  🔄 Recalculate Missed Days
+                  💾 Save to Profile
                 </button>
-                <button
+                <button 
                   onClick={handleExport}
-                  className="px-4 py-2 bg-indigo-50 text-indigo-600 font-medium hover:bg-indigo-100 rounded-xl transition"
+                  className="px-4 py-2.5 bg-indigo-50 text-indigo-700 font-medium hover:bg-indigo-100 rounded-xl transition-all"
                 >
                   📅 Export to Calendar
                 </button>
-                <button
-                  onClick={() => setGeneratedSchedule(null)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 rounded-xl transition"
+                <button 
+                  onClick={handleReschedule}
+                  className="px-4 py-2.5 bg-slate-100 text-slate-700 font-medium hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all"
                 >
-                  Create New
+                  🔄 Reschedule
                 </button>
               </div>
             </div>
 
-            {generatedSchedule.generatedSchedule && generatedSchedule.generatedSchedule.length > 0 ? (
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm animate-in fade-in">
-                <table className="w-full text-left border-collapse bg-white">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm uppercase tracking-wider">
-                      <th className="p-4 font-semibold whitespace-nowrap">Date</th>
-                      <th className="p-4 font-semibold whitespace-nowrap">Time Slot</th>
-                      <th className="p-4 font-semibold">Subject</th>
-                      <th className="p-4 font-semibold whitespace-nowrap">Duration</th>
-                      <th className="p-4 font-semibold text-center whitespace-nowrap">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {generatedSchedule.generatedSchedule.map((block, index) => {
-                      const isBreak = block.subject.includes('Break');
-                      const isCompleted = block.status === 'Completed';
-
-                      return (
-                        <tr key={block._id || index} className={`transition-colors hover:bg-slate-50/50 ${isBreak ? 'bg-amber-50/40' : (isCompleted ? 'bg-teal-50/20' : '')}`}>
-                          <td className="p-4 align-middle">
-                            <div className="font-bold text-slate-800 whitespace-nowrap">{new Date(block.date).toLocaleDateString()}</div>
-                            <div className="text-xs font-semibold text-slate-500 uppercase">{block.dayName}</div>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-50 text-indigo-600 whitespace-nowrap shadow-sm border border-indigo-100">
-                              🌤️ {block.timeSlot}
-                            </span>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <div className={`font-bold text-base ${isBreak ? 'text-amber-600' : 'text-indigo-700'}`}>
-                              {block.subject}
-                            </div>
-                          </td>
-                          <td className="p-4 align-middle font-medium text-slate-600 whitespace-nowrap">
-                            ⏱️ {block.durationHours} hrs
-                          </td>
-                          <td className="p-4 align-middle">
-                            {isBreak ? (
-                              <div className="flex justify-center w-full">
-                                <span className="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 uppercase">Rest</span>
-                              </div>
-                            ) : (
-                              <div className="flex justify-center">
-                                <label className="relative flex items-center justify-center cursor-pointer group" title={isCompleted ? "Mark Pending" : "Mark Done"}>
-                                  <input
-                                    type="checkbox"
-                                    checked={isCompleted}
-                                    onChange={() => handleStatusToggle(block._id, block.status)}
-                                    className="peer sr-only"
-                                  />
-                                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center border-2 transition-all ${isCompleted ? 'bg-teal-500 border-teal-500 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-teal-400 group-hover:bg-teal-50'}`}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" viewBox="0 0 20 20" fill="currentColor">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
+            {groupedSchedule && groupedSchedule.length > 0 ? (
+              <div className="space-y-8 animate-in fade-in">
+                {groupedSchedule.map((group, groupIdx) => (
+                  <div key={groupIdx} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                      <h3 className="text-lg font-bold text-slate-800">
+                        {new Date(group.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </h3>
+                      <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm font-bold rounded-full uppercase tracking-wider">
+                        {group.dayName}
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-100 text-slate-500 text-xs uppercase tracking-wider bg-white">
+                            <th className="px-6 py-3 font-semibold whitespace-nowrap">Time Slot</th>
+                            <th className="px-6 py-3 font-semibold">Subject</th>
+                            <th className="px-6 py-3 font-semibold whitespace-nowrap border-l border-slate-100">Duration</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {group.blocks.map((block, index) => {
+                            const isBreak = block.subject.includes('Break');
+                            return (
+                              <tr key={block._id || index} className={`transition-colors hover:bg-slate-50/50 ${isBreak ? 'bg-amber-50/30' : ''}`}>
+                                <td className="px-6 py-4 align-middle w-48">
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap shadow-sm border ${isBreak ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
+                                    🌤️ {block.timeSlot}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 align-middle">
+                                  <div className={`font-bold text-base ${isBreak ? 'text-amber-600' : 'text-slate-800'}`}>
+                                    {block.subject}
                                   </div>
-                                </label>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                                </td>
+                                <td className="px-6 py-4 align-middle font-medium text-slate-600 whitespace-nowrap border-l border-slate-50 w-32">
+                                  ⏱️ {block.durationHours} hrs
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="text-center py-10">
@@ -434,7 +426,7 @@ const TimeTableGenerator = () => {
                 className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-bold text-xl px-12 py-5 rounded-full shadow-[0_8px_30px_rgb(99,102,241,0.4)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.6)] hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed group w-full max-w-lg"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  {loading ? 'Synthesizing Algorithm... ⚙️' : ' Genarate shedule Plan 🚀'}
+                  {loading ? 'Synthesizing Algorithm... ⚙️' : ' Generate Schedule Plan 🚀'}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </button>

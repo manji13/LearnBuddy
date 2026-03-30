@@ -29,6 +29,7 @@ import StudentSemesters from './Pages/Module Management/modules/Studentsemesters
 import StudentModules from './Pages/Module Management/semesters/Studentmodules.jsx';
 
 import TimeTableGenerator from './Pages/TimeTable/TimeTableGenerator.jsx';
+import UserTimeTable from './Pages/TimeTable/UserTimeTable.jsx';
 
 function App() {
   return (
@@ -70,7 +71,8 @@ function App() {
         <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
         <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
 
-        
+        {/* Profile Views */}
+        <Route path="/profile/timetable" element={<UserTimeTable />} />
 
       </Routes>
     </Router>
