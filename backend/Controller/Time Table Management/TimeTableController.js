@@ -24,7 +24,7 @@ exports.generateTimeTable = async (req, res) => {
 
     const examTargetDate = new Date(examDate);
     const today = new Date();
-    
+
     // Validate dates
     const timeDiff = examTargetDate.getTime() - today.getTime();
     const daysUntilExam = Math.ceil(timeDiff / (1000 * 3600 * 24));
@@ -40,7 +40,7 @@ exports.generateTimeTable = async (req, res) => {
       const iterDate = new Date(currentDate);
       iterDate.setDate(currentDate.getDate() + i);
       const dayName = iterDate.toLocaleDateString('en-US', { weekday: 'long' });
-      
+
       if (!unavailableDays || !unavailableDays.includes(dayName)) {
         studyDays.push({ date: iterDate, dayName });
       }
@@ -73,17 +73,17 @@ exports.generateTimeTable = async (req, res) => {
     for (const day of studyDays) {
       let hoursLeftInDay = hoursPerDay;
       let lastSubjectAssigned = null;
-      
+
       // Start clock based on preference (Morning=9am, Afternoon=1pm, Night=7pm, Mixed=9am)
-      let currentMinutes = 9 * 60; 
+      let currentMinutes = 9 * 60;
       if (studyPreference === 'Afternoon') currentMinutes = 13 * 60;
       if (studyPreference === 'Night') currentMinutes = 19 * 60;
-      
+
       const todayBusy = (unavailableTimeSlots || []).filter(slot => slot.day === day.dayName);
 
       while (hoursLeftInDay > 0) {
         let subjectsNeedingHours = subjectAllocations.filter(s => s.assignedHours < s.allocatedHours);
-        
+
         // Force Interleaving
         if (subjectsNeedingHours.length > 1 && lastSubjectAssigned) {
           const others = subjectsNeedingHours.filter(s => s.name !== lastSubjectAssigned.name);
@@ -92,7 +92,7 @@ exports.generateTimeTable = async (req, res) => {
 
         let selectedSubject;
         if (subjectsNeedingHours.length > 0) {
-          selectedSubject = subjectsNeedingHours.reduce((a, b) => 
+          selectedSubject = subjectsNeedingHours.reduce((a, b) =>
             (a.allocatedHours - a.assignedHours) > (b.allocatedHours - b.assignedHours) ? a : b
           );
         } else {
@@ -101,12 +101,12 @@ exports.generateTimeTable = async (req, res) => {
 
         let maxBlockSize = energyLevel === 'High' ? 2 : (energyLevel === 'Low' ? 1 : 1.5);
         if (selectedSubject.proficiency === 'Weak' && energyLevel !== 'High') {
-          maxBlockSize = Math.min(maxBlockSize, 1); 
+          maxBlockSize = Math.min(maxBlockSize, 1);
         }
 
         const needed = selectedSubject.allocatedHours - selectedSubject.assignedHours;
         const blockDurationHours = Math.min(maxBlockSize, hoursLeftInDay, needed > 0 ? needed : hoursLeftInDay);
-        
+
         if (blockDurationHours <= 0) break;
 
         let blockMins = blockDurationHours * 60;
@@ -121,16 +121,16 @@ exports.generateTimeTable = async (req, res) => {
             const [h2, m2] = busy.endTime.split(':').map(Number);
             const busyStart = h1 * 60 + m1;
             const busyEnd = h2 * 60 + m2;
-            
+
             if (currentMinutes < busyEnd && (currentMinutes + blockMins) > busyStart) {
               collision = true;
               if (busyEnd > latestBusyEnd) latestBusyEnd = busyEnd;
             }
           }
           if (collision) {
-             currentMinutes = latestBusyEnd;
+            currentMinutes = latestBusyEnd;
           } else {
-             tryingToPlace = false;
+            tryingToPlace = false;
           }
         }
 
@@ -154,7 +154,7 @@ exports.generateTimeTable = async (req, res) => {
         if (hoursLeftInDay > 0 && minBreakDuration > 0) {
           const breakMins = minBreakDuration;
           const breakDurationHours = Number((minBreakDuration / 60).toFixed(2));
-          
+
           if (hoursLeftInDay >= breakDurationHours) {
             // Collision check for the break
             tryingToPlace = true;
@@ -167,7 +167,7 @@ exports.generateTimeTable = async (req, res) => {
                 const [h2, m2] = busy.endTime.split(':').map(Number);
                 const busyStart = h1 * 60 + m1;
                 const busyEnd = h2 * 60 + m2;
-                
+
                 if (currentMinutes < busyEnd && (currentMinutes + breakMins) > busyStart) {
                   collision = true;
                   if (busyEnd > latestBusyEnd) latestBusyEnd = busyEnd;
@@ -182,7 +182,7 @@ exports.generateTimeTable = async (req, res) => {
             }
 
             const breakSlot = `${formatTime(currentMinutes)} - ${formatTime(currentMinutes + breakMins)}`;
-            
+
             generatedSchedule.push({
               date: day.date,
               dayName: day.dayName,
@@ -191,7 +191,7 @@ exports.generateTimeTable = async (req, res) => {
               durationHours: breakDurationHours,
               status: 'Completed'
             });
-            
+
             currentMinutes += breakMins;
             hoursLeftInDay -= breakDurationHours;
           }
@@ -241,7 +241,7 @@ exports.updateBlockStatus = async (req, res) => {
   try {
     const { id, blockId } = req.params;
     const { status, timeSlot, subject, date } = req.body;
-    
+
     const timeTableCheck = await TimeTable.findOne({ _id: id, "generatedSchedule._id": blockId });
     if (!timeTableCheck) return res.status(404).json({ message: 'Block not found' });
 
@@ -250,7 +250,7 @@ exports.updateBlockStatus = async (req, res) => {
     if (status !== undefined) updateFields["generatedSchedule.$.status"] = status;
     if (timeSlot !== undefined) updateFields["generatedSchedule.$.timeSlot"] = timeSlot;
     if (subject !== undefined) updateFields["generatedSchedule.$.subject"] = subject;
-    
+
     // Automatically manage day shifts if a date is pushed manually
     if (date !== undefined) {
       updateFields["generatedSchedule.$.date"] = date;
@@ -263,7 +263,7 @@ exports.updateBlockStatus = async (req, res) => {
       { $set: updateFields },
       { new: true }
     );
-    
+
     res.status(200).json(timeTable);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
@@ -279,17 +279,17 @@ exports.recalculateSchedule = async (req, res) => {
 
     let missedHours = 0;
     const now = new Date();
-    
+
     timeTable.generatedSchedule.forEach(block => {
-      if (!block.subject.includes('Break') && block.status === 'Pending' && new Date(block.date) < new Date(now.setHours(0,0,0,0))) {
+      if (!block.subject.includes('Break') && block.status === 'Pending' && new Date(block.date) < new Date(now.setHours(0, 0, 0, 0))) {
         missedHours += block.durationHours;
-        block.status = 'Completed'; 
+        block.status = 'Completed';
       }
     });
 
     if (missedHours > 0) {
-      const futureBlocks = timeTable.generatedSchedule.filter(block => 
-        !block.subject.includes('Break') && new Date(block.date) >= new Date(now.setHours(0,0,0,0))
+      const futureBlocks = timeTable.generatedSchedule.filter(block =>
+        !block.subject.includes('Break') && new Date(block.date) >= new Date(now.setHours(0, 0, 0, 0))
       );
 
       if (futureBlocks.length > 0) {
@@ -299,7 +299,7 @@ exports.recalculateSchedule = async (req, res) => {
         });
       }
     }
-    
+
     await timeTable.save();
     res.status(200).json(timeTable);
   } catch (error) {
@@ -315,27 +315,27 @@ exports.exportToICS = async (req, res) => {
     if (!timeTable) return res.status(404).json({ message: 'Timetable not found' });
 
     let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//LearnBuddy//TimeTable Gen//EN\r\n";
-    
+
     timeTable.generatedSchedule.forEach((block, index) => {
       const startDate = new Date(block.date);
       // Attempt to parse HH:MM PM from timeSlot if available
       let startH = 9;
       let startM = 0;
       if (block.timeSlot && block.timeSlot.includes(' - ')) {
-         const firstTimeStr = block.timeSlot.split(' - ')[0]; // e.g. "4:00 PM"
-         const tMatch = firstTimeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-         if (tMatch) {
-            let h = parseInt(tMatch[1]);
-            const m = parseInt(tMatch[2]);
-            const ampm = tMatch[3].toUpperCase();
-            if (ampm === 'PM' && h !== 12) h += 12;
-            if (ampm === 'AM' && h === 12) h = 0;
-            startH = h;
-            startM = m;
-         }
+        const firstTimeStr = block.timeSlot.split(' - ')[0]; // e.g. "4:00 PM"
+        const tMatch = firstTimeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (tMatch) {
+          let h = parseInt(tMatch[1]);
+          const m = parseInt(tMatch[2]);
+          const ampm = tMatch[3].toUpperCase();
+          if (ampm === 'PM' && h !== 12) h += 12;
+          if (ampm === 'AM' && h === 12) h = 0;
+          startH = h;
+          startM = m;
+        }
       }
-      startDate.setHours(startH, startM, 0, 0); 
-      
+      startDate.setHours(startH, startM, 0, 0);
+
       const endDate = new Date(startDate);
       endDate.setMinutes(endDate.getMinutes() + (block.durationHours * 60));
 
