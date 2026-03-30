@@ -236,20 +236,27 @@ exports.deleteTimeTable = async (req, res) => {
   }
 };
 
-// Update block details (Status, TimeSlot, Subject)
+// Update block details (Status, TimeSlot, Subject, Date)
 exports.updateBlockStatus = async (req, res) => {
   try {
     const { id, blockId } = req.params;
-    const { status, timeSlot, subject } = req.body;
+    const { status, timeSlot, subject, date } = req.body;
     
     const timeTableCheck = await TimeTable.findOne({ _id: id, "generatedSchedule._id": blockId });
     if (!timeTableCheck) return res.status(404).json({ message: 'Block not found' });
 
     // Ensure we don't accidentally wipe status if only updating time
     const updateFields = {};
-    if (status) updateFields["generatedSchedule.$.status"] = status;
-    if (timeSlot) updateFields["generatedSchedule.$.timeSlot"] = timeSlot;
-    if (subject) updateFields["generatedSchedule.$.subject"] = subject;
+    if (status !== undefined) updateFields["generatedSchedule.$.status"] = status;
+    if (timeSlot !== undefined) updateFields["generatedSchedule.$.timeSlot"] = timeSlot;
+    if (subject !== undefined) updateFields["generatedSchedule.$.subject"] = subject;
+    
+    // Automatically manage day shifts if a date is pushed manually
+    if (date !== undefined) {
+      updateFields["generatedSchedule.$.date"] = date;
+      const d = new Date(date);
+      updateFields["generatedSchedule.$.dayName"] = d.toLocaleDateString('en-US', { weekday: 'long' });
+    }
 
     const timeTable = await TimeTable.findOneAndUpdate(
       { _id: id, "generatedSchedule._id": blockId },

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -10,6 +10,10 @@ const TimeTableGenerator = () => {
   const [loading, setLoading] = useState(false);
   const [generatedSchedule, setGeneratedSchedule] = useState(null);
   const [userId] = useState(localStorage.getItem('userId') || '64bd2c9b4e3f4a2b9c8d1e7f'); 
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const [formData, setFormData] = useState({
     examName: '',
