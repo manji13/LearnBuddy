@@ -22,6 +22,14 @@ exports.generateTimeTable = async (req, res) => {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
+    if (subjects.some(s => !s.name || !s.name.trim())) {
+      return res.status(400).json({ message: 'Subject names cannot be null or empty' });
+    }
+
+    if (hoursPerDay < 1) {
+      return res.status(400).json({ message: 'Focus hours cannot be less than 1 hour per day' });
+    }
+
     const examTargetDate = new Date(examDate);
     const today = new Date();
 
