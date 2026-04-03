@@ -34,6 +34,12 @@ import StudentFaculties from './Pages/Module Management/faculties/Studentfaculti
 import StudentSemesters from './Pages/Module Management/modules/Studentsemesters.jsx';
 import StudentModules from './Pages/Module Management/semesters/Studentmodules.jsx';
 
+import AnnouncementList from './Pages/Announcement/AdminAnnouncementList.jsx';
+import StudentAnnouncementList from './Pages/Announcement/StudentAnnouncementList.jsx';
+import StudentAnnouncementView from './Pages/Announcement/StudentAnnouncementView.jsx';
+import AdminAnnouncementView from './Pages/Announcement/AdminAnnouncementView.jsx';
+import AdminAnnouncementForm from './Pages/Announcement/AdminAnnouncementForm.jsx';
+
 
 function App() {
   return (
@@ -82,6 +88,15 @@ function App() {
           <Route path="/admin/past-papers" element={<AdminPastPaperPage />} />
           <Route path="/notes-ai" element={<NotesAiPage />} />
 
+
+          <Route path="/announcements" element={<AnnouncementList />} />
+          <Route path="/student/announcements" element={<StudentAnnouncementList />} />
+          <Route path="/student/announcements/:id" element={<StudentAnnouncementView />} />
+          <Route path="/admin/announcements/:id" element={<AdminAnnouncementView />} />
+          <Route path="/admin/announcements/edit/:id" element={<AdminAnnouncementForm />} />
+          <Route path="/admin/announcements/new" element={<AdminAnnouncementForm />} />
+         
+/admin/announcements/edit/
 
         </Routes>
       </div>

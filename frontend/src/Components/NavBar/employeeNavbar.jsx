@@ -127,6 +127,15 @@ const EmployeeNavbar = () => {
                       <span className="mr-3 text-lg">🧠</span> Lecture Notes AI
                     </div>
                   </Link>
+                  <Link 
+  to="/announcements" 
+  className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+  onClick={() => setIsManageOpen(false)}
+>
+  <div className="flex items-center cursor-pointer">
+    <span className="mr-3 text-lg">📢</span> Announcements
+  </div>
+</Link>
                 </div>
               )}
             </div>

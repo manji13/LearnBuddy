@@ -28,7 +28,7 @@ export default function StudentFaculties() {
       <Navbar />
      
 
-      <div className="ml-56 flex-1 p-8">
+     <div className="max-w-8xl mx-auto p-8">
 
         {/* Header */}
         <div className="mb-8">

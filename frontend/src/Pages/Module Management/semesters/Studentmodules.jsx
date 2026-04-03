@@ -35,138 +35,124 @@ export default function StudentModules() {
   )
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      <Navbar />
-     
+  <div className="min-h-screen bg-slate-50 font-sans">
+    <Navbar />
 
-      <div className="ml-56 flex-1 p-8">
+    <div className="max-w-8xl mx-auto p-8">
+      {/* Back navigation */}
+      <div className="flex items-center gap-2 text-sm text-gray-400 mb-6 flex-wrap">
+        <Link to="/student/faculties" className="hover:text-blue-600 transition-colors">
+          Faculties
+        </Link>
+        <span>/</span>
+        <Link
+          to={`/student/faculties/${facultyId}/semesters`}
+          className="hover:text-blue-600 transition-colors"
+        >
+          {faculty?.name ?? 'Semesters'}
+        </Link>
+        <span>/</span>
+        <span className="text-gray-700 font-medium">
+          {semester ? `Year ${semester.year} — Sem ${semester.semester}` : 'Modules'}
+        </span>
+      </div>
 
-        {/* Back navigation */}
-        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6 flex-wrap">
-          <Link to="/student/faculties" className="hover:text-blue-600 transition-colors">
-            Faculties
-          </Link>
-          <span>/</span>
-          <Link
-            to={`/student/faculties/${facultyId}/semesters`}
-            className="hover:text-blue-600 transition-colors"
-          >
-            {faculty?.name ?? 'Semesters'}
-          </Link>
-          <span>/</span>
-          <span className="text-gray-700 font-medium">
-            {semester ? `Year ${semester.year} — Sem ${semester.semester}` : 'Modules'}
-          </span>
+      {/* Header */}
+      {semester && faculty && (
+        <div className="mb-8">
+          <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">Modules</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Year {semester.year} — Semester {semester.semester}
+          </h1>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
+              {faculty.code}
+            </span>
+            <span className="text-sm text-gray-500">{faculty.name}</span>
+          </div>
         </div>
+      )}
 
-        {/* Header */}
-        {semester && faculty && (
-          <div className="mb-8">
-            <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">Modules</p>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Year {semester.year} — Semester {semester.semester}
-            </h1>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
-                {faculty.code}
-              </span>
-              <span className="text-sm text-gray-500">{faculty.name}</span>
+      {/* Stats + Search */}
+      {!loading && modules.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <div className="bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
+              <span className="text-xs text-gray-400">Total modules</span>
+              <p className="text-xl font-bold text-gray-900 leading-tight">{modules.length}</p>
             </div>
           </div>
-        )}
+          <input
+            className="w-full max-w-xs px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+            placeholder="Search modules..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+      )}
 
-        {/* Stats + Search */}
-        {!loading && modules.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <div className="bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
-                <span className="text-xs text-gray-400">Total modules</span>
-                <p className="text-xl font-bold text-gray-900 leading-tight">{modules.length}</p>
+      {/* Content - Cards Grid */}
+      {loading ? (
+        <div className="flex items-center justify-center py-24 gap-3 text-sm text-gray-400">
+          <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+          Loading modules...
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center py-24 gap-3 text-center">
+          <span className="text-6xl">📚</span>
+          <p className="font-semibold text-gray-600 mt-2">
+            {search ? 'No modules match your search' : 'No modules yet'}
+          </p>
+          <p className="text-sm text-gray-400">
+            {search ? 'Try a different keyword' : 'This semester has no modules added yet'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((module) => (
+            <div
+              key={module._id}
+              className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer overflow-hidden"
+              onClick={() => navigate(`/student/modules/${module._id}`)} // adjust route as needed
+            >
+              <div className="p-5">
+                {/* Module Number Badge */}
+                <div className="mb-3">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
+                    {module.moduleNumber}
+                  </span>
+                </div>
+
+                {/* Module Name */}
+                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                  {module.moduleName}
+                </h3>
+
+                {/* Description */}
+                <p className="text-sm text-gray-500 line-clamp-3">
+                  {module.description || <span className="text-gray-300">No description</span>}
+                </p>
+
+                {/* Arrow hint */}
+                <div className="mt-4 flex justify-end">
+                  <span className="text-indigo-500 text-sm font-medium">View details →</span>
+                </div>
               </div>
             </div>
-            <input
-              className="w-full max-w-xs px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
-              placeholder="Search modules..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-        )}
-
-        {/* Content */}
-        {loading ? (
-          <div className="flex items-center justify-center py-24 gap-3 text-sm text-gray-400">
-            <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
-            Loading modules...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center py-24 gap-3 text-center">
-            <span className="text-6xl">📚</span>
-            <p className="font-semibold text-gray-600 mt-2">
-              {search ? 'No modules match your search' : 'No modules yet'}
-            </p>
-            <p className="text-sm text-gray-400">
-              {search ? 'Try a different keyword' : 'This semester has no modules added yet'}
-            </p>
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  {['#', 'Module No.', 'Module Name', 'Description', 'Actions'].map(h => (
-                    <th key={h} className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filtered.map((m, i) => (
-                  <tr key={m._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4 text-sm text-gray-400 w-10">{i + 1}</td>
-                    <td className="px-5 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
-                        {m.moduleNumber}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <p className="font-semibold text-gray-900 text-sm">{m.moduleName}</p>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-gray-500 max-w-xs">
-                      {m.description || <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          to={`/past-papers?moduleName=${encodeURIComponent(m.moduleName)}`}
-                          className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
-                        >
-                          Past Papers
-                        </Link>
-                        <Link
-                          to={`/notes-ai?moduleName=${encodeURIComponent(m.moduleName)}`}
-                          className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
-                        >
-                          Notes AI
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Back button */}
-        <div className="mt-8">
-          <Link
-            to={`/student/faculties/${facultyId}/semesters`}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-sm font-medium text-gray-700 rounded-xl hover:bg-gray-50 shadow-sm transition-colors"
-          >
-            ← Back to Semesters
-          </Link>
+          ))}
         </div>
+      )}
+
+      {/* Back button */}
+      <div className="mt-8">
+        <Link
+          to={`/student/faculties/${facultyId}/semesters`}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-sm font-medium text-gray-700 rounded-xl hover:bg-gray-50 shadow-sm transition-colors"
+        >
+          ← Back to Semesters
+        </Link>
       </div>
     </div>
-  )
+  </div>
+);
 }
