@@ -9,6 +9,8 @@ import User from './Pages/User Management/User';
 import UserProfile from './Pages/User Management/UserPrfole.jsx';
 import ForgotPassword from './Pages/User Management/ForgotPassword.jsx';
 
+import ResourceFinder from './Pages/ResourceFinder/ResourceFinder.jsx';
+
 import StudentDashboard from './Pages/User Management/StudentDashboard.jsx';
 import AdminDashboard from './Pages/User Management/EmployeeDashboard.jsx';
 import PastPaperPage from './Pages/pastPaper/PastPaperPage.jsx';
@@ -48,6 +50,8 @@ function App() {
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          <Route path="/resource-finder" element={<ResourceFinder />} />
 
           <Route path="/users/:id" element={<UserProfile />} />
 
