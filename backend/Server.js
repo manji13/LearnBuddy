@@ -1,7 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-// Copy ONLY the changed/added lines into your existing server.js
-// ─────────────────────────────────────────────────────────────
-
 const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
@@ -19,6 +15,8 @@ const timeTableRoutes = require('./Routes/Time Table Management/TimeTableRoutes'
 const pastPaperRoutes = require('./Routes/pastPaper/pastPaperRoutes');
 const noteRoutes = require('./Routes/notes/noteRoutes');
 const contactRoutes = require('./Routes/Support/ContactRoute.js'); 
+const savedModuleRoute = require('./Routes/Module Management/SavedmoduleRoute');
+const announcementRoutes = require('./Routes/Announcement/AnnouncementRoutes');
 
 const app = express();
 connectDB();
@@ -47,32 +45,8 @@ app.use('/api/modules', moduleRoutes);
 app.use('/api/timetable', timeTableRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/resources', require('./Routes/ResourceFinder/ResourceFinderRoute.js'));
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-app.use('/api/auth', authRoutes);
-app.use('/api/pastpapers', pastPaperRoutes);
-app.use('/api/notes', noteRoutes);
-
-const facultyRoutes = require('./Routes/Module Management/FacultyRoutes');
-const semesterRoutes = require('./Routes/Module Management/SemesterRoutes');
-const moduleRoutes = require('./Routes/Module Management/ModuleRoutes');
-const savedModuleRoute = require('./Routes/Module Management/SavedmoduleRoute') 
-
-const contactRoutes = require('./Routes/Support/ContactRoute.js');
-
-// ── ADD THIS ──────────────────────────────────────────────────
-const announcementRoutes = require('./Routes/Announcement/AnnouncementRoutes');
-// ─────────────────────────────────────────────────────────────
-
-app.use('/api/faculties', facultyRoutes);
-app.use('/api/semesters', semesterRoutes);
-app.use('/api/modules', moduleRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/saved-modules', savedModuleRoute)
-// ── CHANGE THIS LINE (was missing protect) ────────────────────
+app.use('/api/saved-modules', savedModuleRoute);
 app.use('/api/announcements', announcementRoutes);
-// ─────────────────────────────────────────────────────────────
 
 app.get('/', (req, res) => res.send('LearnBuddy API is running...'));
 
