@@ -28,7 +28,7 @@ import SemesterList from './Pages/Module Management/semesters/SemesterList.jsx';
 import SemesterForm from './Pages/Module Management/semesters/SemesterForm.jsx';
 import SemesterDetail from './Pages/Module Management/semesters/SemesterDetails.jsx';
 
-import ModuleList from './Pages/Module Management/modules/ModuleList.Jsx';
+import ModuleList from './Pages/Module Management/modules/ModuleList.jsx';
 import ModuleForm from './Pages/Module Management/modules/ModuleForm.jsx';
 import ModuleDetail from './Pages/Module Management/modules/ModuleDetails.jsx';
 
@@ -43,13 +43,9 @@ function App() {
   return (
     <Router>
       <div className="App">
-
-      <Routes>
-        {/* Public Routes */}
-      
-        
-        <Route path="/timetable-generator" element={<TimeTableGenerator />} />
         <Routes>
+          {/* Public Routes */}
+          <Route path="/timetable-generator" element={<TimeTableGenerator />} />
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
@@ -57,45 +53,44 @@ function App() {
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-
           <Route path="/resource-finder" element={<ResourceFinder />} />
-
           <Route path="/users/:id" element={<UserProfile />} />
 
-
-
           {/* Faculties */}
-        <Route path="/faculties" element={<FacultyList />} />
-        <Route path="/faculties/new" element={<FacultyForm />} />
-        <Route path="/faculties/:id" element={<FacultyDetail />} />
-        <Route path="/faculties/:id/edit" element={<FacultyForm />} />
+          <Route path="/faculties" element={<FacultyList />} />
+          <Route path="/faculties/new" element={<FacultyForm />} />
+          <Route path="/faculties/:id" element={<FacultyDetail />} />
+          <Route path="/faculties/:id/edit" element={<FacultyForm />} />
 
-        {/* Semesters */}
-        <Route path="/semesters" element={<SemesterList />} />
-        <Route path="/semesters/new" element={<SemesterForm />} />
-        <Route path="/semesters/:id" element={<SemesterDetail />} />
-        <Route path="/semesters/:id/edit" element={<SemesterForm />} />
+          {/* Semesters */}
+          <Route path="/semesters" element={<SemesterList />} />
+          <Route path="/semesters/new" element={<SemesterForm />} />
+          <Route path="/semesters/:id" element={<SemesterDetail />} />
+          <Route path="/semesters/:id/edit" element={<SemesterForm />} />
 
-        {/* Modules */}
-        <Route path="/modules" element={<ModuleList />} />
-        <Route path="/modules/new" element={<ModuleForm />} />
-        <Route path="/modules/:id" element={<ModuleDetail />} />
-        <Route path="/modules/:id/edit" element={<ModuleForm />} />
-        <Route path="/student/faculties" element={<StudentFaculties />} />
-        <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
-        <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
+          {/* Modules */}
+          <Route path="/modules" element={<ModuleList />} />
+          <Route path="/modules/new" element={<ModuleForm />} />
+          <Route path="/modules/:id" element={<ModuleDetail />} />
+          <Route path="/modules/:id/edit" element={<ModuleForm />} />
+          
+          {/* Student Routes */}
+          <Route path="/student/faculties" element={<StudentFaculties />} />
+          <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
+          <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
 
-        {/* Profile Views */}
-        <Route path="/profile/timetable" element={<UserTimeTable />} />
-        {/* Contact Us */}
-        <Route path="/contact" element={<ContactUs />} />
+          {/* Profile Views */}
+          <Route path="/profile/timetable" element={<UserTimeTable />} />
+          
+          {/* Contact Us */}
+          <Route path="/contact" element={<ContactUs />} />
 
+          {/* Past Papers & Notes */}
           <Route path="/past-papers" element={<PastPaperPage />} />
           <Route path="/quiz-history" element={<QuizHistoryPage />} />
           <Route path="/admin/past-papers" element={<AdminPastPaperPage />} />
           <Route path="/notes-ai" element={<NotesAiPage />} />
-
-
+          
         </Routes>
       </div>
     </Router>
