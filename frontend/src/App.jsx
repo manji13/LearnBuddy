@@ -39,7 +39,7 @@ import StudentAnnouncementList from './Pages/Announcement/StudentAnnouncementLis
 import StudentAnnouncementView from './Pages/Announcement/StudentAnnouncementView.jsx';
 import AdminAnnouncementView from './Pages/Announcement/AdminAnnouncementView.jsx';
 import AdminAnnouncementForm from './Pages/Announcement/AdminAnnouncementForm.jsx';
-
+import MyModules from './Pages/Module Management/modules/SavedModule.jsx';
 
 function App() {
   return (
@@ -79,6 +79,8 @@ function App() {
         <Route path="/student/faculties" element={<StudentFaculties />} />
         <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
         <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
+          
+          <Route path="/student/saved-modules" element={<MyModules />} />
 
         {/* Contact Us */}
         <Route path="/contact" element={<ContactUs />} />
@@ -95,8 +97,7 @@ function App() {
           <Route path="/admin/announcements/:id" element={<AdminAnnouncementView />} />
           <Route path="/admin/announcements/edit/:id" element={<AdminAnnouncementForm />} />
           <Route path="/admin/announcements/new" element={<AdminAnnouncementForm />} />
-         
-/admin/announcements/edit/
+
 
         </Routes>
       </div>

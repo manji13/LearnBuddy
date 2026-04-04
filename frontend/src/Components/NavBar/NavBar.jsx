@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../assets/learnbuddy-logo.jpg';
+import API_URL from '../../api/config';
 
 const NavLink = ({ to, children, onClick, className = '' }) => {
   const baseClasses = "text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/80 px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer select-none";
@@ -21,14 +22,11 @@ const DropdownArrow = () => (
   </svg>
 );
 
-// Bell icon component
 const BellIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
   </svg>
 );
-
-const STORAGE_KEY = 'announcement_last_seen_count';
 
 const StudentNavbar = () => {
   const navigate = useNavigate();
@@ -37,15 +35,25 @@ const StudentNavbar = () => {
 
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Helper to get the storage key for this student
+  const getStorageKey = () => `announcement_last_seen_id_${userId}`;
+
   useEffect(() => {
+    // Only fetch if we have a valid userId
+    if (!userId) return;
+
     const fetchAnnouncementCount = async () => {
       try {
-        const res = await fetch('/api/announcements'); // 🔁 replace with your actual endpoint
+        const res = await fetch(`${API_URL}/announcements`);
+        if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
-        const total = data.length;
 
-        const lastSeen = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
-        const newCount = Math.max(0, total - lastSeen);
+        const announcements = Array.isArray(data) ? data : (data.data ?? []);
+        const total = announcements.length;
+
+        const storageKey = getStorageKey();
+        const lastSeenCount = parseInt(localStorage.getItem(storageKey) || '0', 10);
+        const newCount = Math.max(0, total - lastSeenCount);
         setUnreadCount(newCount);
       } catch (err) {
         console.error('Failed to fetch announcements:', err);
@@ -53,13 +61,22 @@ const StudentNavbar = () => {
     };
 
     fetchAnnouncementCount();
-  }, []);
+  }, [userId]); // Re-run when userId changes (e.g., login/logout)
 
   const handleBellClick = () => {
-    // Mark all as seen by saving current total
-    // We'll update after navigating — the list page can call markAllSeen()
+    // Immediately clear the badge for a responsive UI
     setUnreadCount(0);
-    localStorage.setItem(STORAGE_KEY, Date.now().toString()); // temp — see note below
+
+    // Update the stored "last seen" count for this student
+    fetch(`${API_URL}/announcements`)
+      .then(r => r.json())
+      .then(data => {
+        const announcements = Array.isArray(data) ? data : (data.data ?? []);
+        const storageKey = getStorageKey();
+        localStorage.setItem(storageKey, String(announcements.length));
+      })
+      .catch(err => console.error('Failed to update announcement read status:', err));
+
     navigate('/student/announcements');
   };
 
@@ -82,7 +99,6 @@ const StudentNavbar = () => {
 
       {/* Middle: Nav Links */}
       <div className="flex items-center gap-1 sm:gap-2">
-
         <NavLink to="/student-dashboard">Home</NavLink>
 
         {/* Faculty Dropdown */}
@@ -98,8 +114,8 @@ const StudentNavbar = () => {
           </div>
         </div>
 
+        <NavLink to="/student/saved-modules">My Modules</NavLink>
         <NavLink to="/contact">Support</NavLink>
-    
 
         {/* AI Bot Dropdown */}
         <div className="relative group">
@@ -114,7 +130,6 @@ const StudentNavbar = () => {
             <Link to="/ai/timetable-generator" className="px-4 py-3 text-sm font-medium text-slate-600 hover:bg-teal-50/80 hover:text-teal-600 hover:pl-5 transition-all duration-200 cursor-pointer">Time Table Generator</Link>
           </div>
         </div>
-
       </div>
 
       {/* Right: Bell + Profile */}
@@ -151,7 +166,6 @@ const StudentNavbar = () => {
             My Profile
           </span>
         </Link>
-
       </div>
     </nav>
   );

@@ -39,6 +39,8 @@ app.use('/api/notes', noteRoutes);
 const facultyRoutes = require('./Routes/Module Management/FacultyRoutes');
 const semesterRoutes = require('./Routes/Module Management/SemesterRoutes');
 const moduleRoutes = require('./Routes/Module Management/ModuleRoutes');
+const savedModuleRoute = require('./Routes/Module Management/SavedmoduleRoute') 
+
 const contactRoutes = require('./Routes/Support/ContactRoute.js');
 
 // ── ADD THIS ──────────────────────────────────────────────────
@@ -49,7 +51,7 @@ app.use('/api/faculties', facultyRoutes);
 app.use('/api/semesters', semesterRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/contact', contactRoutes);
-
+app.use('/api/saved-modules', savedModuleRoute)
 // ── CHANGE THIS LINE (was missing protect) ────────────────────
 app.use('/api/announcements', announcementRoutes);
 // ─────────────────────────────────────────────────────────────

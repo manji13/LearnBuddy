@@ -100,7 +100,7 @@ const AnnouncementForm = () => {
         });
       }
       setSubmitted(true);
-      setTimeout(() => navigate("/admin/announcements"), 1500);
+      setTimeout(() => navigate("/announcements"), 500);
     } catch (err) {
       setApiError(
         err.response?.data?.message ||
