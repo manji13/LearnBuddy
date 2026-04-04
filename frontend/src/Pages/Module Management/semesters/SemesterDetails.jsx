@@ -49,9 +49,9 @@ export default function SemesterDetail() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       <EmployeeNavbar />
-      <div className="flex">
+      
      
-        <main className="ml-56 flex-1 p-8">
+        <main className="max-w-8xl mx-auto p-8">
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-6 flex-wrap">
@@ -147,6 +147,6 @@ export default function SemesterDetail() {
 
         </main>
       </div>
-    </div>
+  
   )
 }

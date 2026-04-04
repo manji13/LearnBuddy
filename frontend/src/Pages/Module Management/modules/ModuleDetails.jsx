@@ -46,7 +46,7 @@ export default function ModuleDetail() {
 
   
   
-   <div className="ml-56 flex-1 p-8">
+   <div className="max-w-8xl mx-auto p-6 ">
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-6 flex-wrap">
         <Link to="/faculties" className="hover:text-blue-600 transition-colors">Faculties</Link>
         <span>/</span>
@@ -105,7 +105,6 @@ export default function ModuleDetail() {
 
       <div className="flex gap-3">
         {sem && <Link to={`/semesters/${sem._id}`} className="inline-flex items-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors shadow-sm">← Back to Semester</Link>}
-        <Link to="/modules" className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">All Modules</Link>
       </div>
     </div>
     </div>

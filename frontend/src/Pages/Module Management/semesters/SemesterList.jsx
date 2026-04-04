@@ -65,9 +65,9 @@ export default function SemesterList() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       <EmployeeNavbar />
-      <div className="flex">
+    
        
-        <div className="ml-56 flex-1 p-8">
+        <div className="max-w-8xl mx-auto p-8">
 
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -175,6 +175,6 @@ export default function SemesterList() {
 
         </div>
       </div>
-    </div>
+    
   )
 }

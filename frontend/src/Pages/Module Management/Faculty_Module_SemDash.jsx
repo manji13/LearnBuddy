@@ -141,9 +141,9 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
     
-      <div className="flex">
+     
     
-        <main className="ml-56 flex-1 p-8 space-y-10">
+        <main className="max-w-8xl mx-auto p-6 ">
 
           {/* Header */}
           <div>
@@ -347,6 +347,6 @@ export default function Dashboard() {
 
         </main>
       </div>
-    </div>
+    
   )
 }

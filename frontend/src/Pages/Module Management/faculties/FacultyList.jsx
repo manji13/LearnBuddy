@@ -40,7 +40,7 @@ export default function FacultyList() {
       
   
   
-   <div className="ml-56 flex-1 p-8">
+  <div className="max-w-8xl mx-auto p-8">
      
       <div className="flex items-center justify-between mb-6">
         <div>

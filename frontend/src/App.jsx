@@ -38,6 +38,12 @@ import StudentModules from './Pages/Module Management/semesters/Studentmodules.j
 
 import TimeTableGenerator from './Pages/TimeTable/TimeTableGenerator.jsx';
 import UserTimeTable from './Pages/TimeTable/UserTimeTable.jsx';
+import AnnouncementList from './Pages/Announcement/AdminAnnouncementList.jsx';
+import StudentAnnouncementList from './Pages/Announcement/StudentAnnouncementList.jsx';
+import StudentAnnouncementView from './Pages/Announcement/StudentAnnouncementView.jsx';
+import AdminAnnouncementView from './Pages/Announcement/AdminAnnouncementView.jsx';
+import AdminAnnouncementForm from './Pages/Announcement/AdminAnnouncementForm.jsx';
+import MyModules from './Pages/Module Management/modules/SavedModule.jsx';
 
 function App() {
   return (
@@ -78,6 +84,16 @@ function App() {
           <Route path="/student/faculties" element={<StudentFaculties />} />
           <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
           <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
+        {/* Modules */}
+        <Route path="/modules" element={<ModuleList />} />
+        <Route path="/modules/new" element={<ModuleForm />} />
+        <Route path="/modules/:id" element={<ModuleDetail />} />
+        <Route path="/modules/:id/edit" element={<ModuleForm />} />
+        <Route path="/student/faculties" element={<StudentFaculties />} />
+        <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
+        <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
+          
+          <Route path="/student/saved-modules" element={<MyModules />} />
 
           {/* Profile Views */}
           <Route path="/profile/timetable" element={<UserTimeTable />} />
@@ -91,6 +107,16 @@ function App() {
           <Route path="/admin/past-papers" element={<AdminPastPaperPage />} />
           <Route path="/notes-ai" element={<NotesAiPage />} />
           
+
+
+          <Route path="/announcements" element={<AnnouncementList />} />
+          <Route path="/student/announcements" element={<StudentAnnouncementList />} />
+          <Route path="/student/announcements/:id" element={<StudentAnnouncementView />} />
+          <Route path="/admin/announcements/:id" element={<AdminAnnouncementView />} />
+          <Route path="/admin/announcements/edit/:id" element={<AdminAnnouncementForm />} />
+          <Route path="/admin/announcements/new" element={<AdminAnnouncementForm />} />
+
+
         </Routes>
       </div>
     </Router>
