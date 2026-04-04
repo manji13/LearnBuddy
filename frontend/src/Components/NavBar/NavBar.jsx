@@ -84,7 +84,7 @@ const StudentNavbar = () => {
         </div>
 
         {/* Support Button */}
-        <NavLink to="/support">
+        <NavLink to="/contact">
           Support
         </NavLink>
 
@@ -103,8 +103,9 @@ const StudentNavbar = () => {
             >
               Note Summaries
             </Link>
-            <Link
-              to="/ai/resources-finder"
+           
+            <Link 
+              to="/resource-finder" 
               className="px-4 py-3 text-sm font-medium text-slate-600 hover:bg-teal-50/80 hover:text-teal-600 hover:pl-5 transition-all duration-200 cursor-pointer border-b border-white/20"
             >
               Resources Finder

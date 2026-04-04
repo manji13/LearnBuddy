@@ -108,6 +108,25 @@ const EmployeeNavbar = () => {
                       <span className="mr-3 text-lg">📚</span> Modules
                     </div>
                   </Link>
+                  <div className="border-t border-slate-100 my-1" />
+                  <Link 
+                    to="/admin/past-papers" 
+                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                    onClick={() => setIsManageOpen(false)}
+                  >
+                    <div className="flex items-center cursor-pointer">
+                      <span className="mr-3 text-lg">📝</span> Past Papers
+                    </div>
+                  </Link>
+                  <Link 
+                    to="/notes-ai" 
+                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                    onClick={() => setIsManageOpen(false)}
+                  >
+                    <div className="flex items-center cursor-pointer">
+                      <span className="mr-3 text-lg">🧠</span> Lecture Notes AI
+                    </div>
+                  </Link>
                 </div>
               )}
             </div>
@@ -132,7 +151,7 @@ const EmployeeNavbar = () => {
               {isAnalysisOpen && (
                 <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 animate-fade-in-down origin-top-right">
                   <Link 
-                    to="/employee/users" 
+                    to="/users" 
                     className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                     onClick={() => setIsAnalysisOpen(false)}
                   >

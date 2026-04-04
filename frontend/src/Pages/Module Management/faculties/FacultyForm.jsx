@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Sidebar from '../../../Components/ModuleManagement/Sidebar.jsx'
-import Navbar from '../../../Components/NavBar/NavBar.jsx'
+import EmployeeNavbar from '../../../Components/NavBar/employeeNavbar'; 
 
 const EMPTY = { name: '', code: '', description: '' }
 const inputCls = "w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
@@ -17,6 +16,7 @@ export default function FacultyForm() {
   const [form,    setForm]    = useState(EMPTY)
   const [loading, setLoading] = useState(isEdit)
   const [saving,  setSaving]  = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({ name: '' })
 
   useEffect(() => {
     if (!isEdit) return
@@ -29,11 +29,25 @@ export default function FacultyForm() {
       .finally(() => setLoading(false))
   }, [id, isEdit])
 
-  const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }))
+  const set = k => e => {
+    const value = e.target.value
+    setForm(p => ({ ...p, [k]: value }))
+    if (k === 'name') {
+      setFieldErrors(prev => ({ ...prev, name: '' }))
+    }
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
-    if (!form.name.trim() || !form.code.trim()) return toast.error('Name and Code are required')
+    const nameTrimmed = form.name.trim()
+    const codeTrimmed = form.code.trim()
+
+    if (!nameTrimmed || !codeTrimmed) return toast.error('Name and Code are required')
+
+    if (/\d/.test(nameTrimmed)) {
+      setFieldErrors(prev => ({ ...prev, name: 'Faculty name cannot contain numbers.' }))
+      return toast.error('Faculty name cannot contain numbers')
+    }
     setSaving(true)
     try {
       if (isEdit) {
@@ -62,9 +76,9 @@ export default function FacultyForm() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      <Navbar />
+      <EmployeeNavbar />
       <div className="flex">
-        <Sidebar />
+       
         <main className="ml-56 flex-1 p-8">
           <div className="max-w-lg mx-auto">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
@@ -77,7 +91,15 @@ export default function FacultyForm() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Faculty Name *</label>
-                  <input className={inputCls} value={form.name} onChange={set('name')} placeholder="e.g. Faculty of Engineering" />
+                  <input
+                    className={`${inputCls} ${fieldErrors.name ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+                    value={form.name}
+                    onChange={set('name')}
+                    placeholder="e.g. Faculty of Engineering"
+                  />
+                  {fieldErrors.name && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Faculty Code *</label>

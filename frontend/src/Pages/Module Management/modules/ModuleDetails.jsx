@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Sidebar from '../../../Components/ModuleManagement/Sidebar.jsx'
-import Navbar from '../../../Components/NavBar/NavBar.jsx'
+import EmployeeNavbar from '../../../Components/NavBar/employeeNavbar';
+
 
 export default function ModuleDetail() {
   const { id } = useParams()
@@ -42,8 +42,8 @@ export default function ModuleDetail() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      <Navbar />
-       <Sidebar />
+      <EmployeeNavbar />
+
   
   
    <div className="ml-56 flex-1 p-8">
@@ -69,6 +69,12 @@ export default function ModuleDetail() {
           <p className="text-sm text-gray-500 mt-1">{module.description || 'No description provided'}</p>
         </div>
         <div className="flex gap-2">
+          <Link
+            to={`/admin/past-papers?moduleName=${encodeURIComponent(module.moduleName)}`}
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-lg transition-colors shadow-sm"
+          >
+            Manage Past Papers
+          </Link>
           <Link to={`/modules/${id}/edit`} className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors shadow-sm">Edit</Link>
           <button onClick={handleDelete} className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 rounded-lg transition-colors">Delete</button>
         </div>

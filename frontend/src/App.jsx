@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css';
 
 import HomePage from './Components/Home/Home';
 import Signin from './Components/Signin/Signin';
@@ -9,8 +9,16 @@ import User from './Pages/User Management/User';
 import UserProfile from './Pages/User Management/UserPrfole.jsx';
 import ForgotPassword from './Pages/User Management/ForgotPassword.jsx';
 
+import ResourceFinder from './Pages/ResourceFinder/ResourceFinder.jsx';
+
 import StudentDashboard from './Pages/User Management/StudentDashboard.jsx';
 import AdminDashboard from './Pages/User Management/EmployeeDashboard.jsx';
+import PastPaperPage from './Pages/pastPaper/PastPaperPage.jsx';
+import QuizHistoryPage from './Pages/pastPaper/QuizHistoryPage.jsx';
+import AdminPastPaperPage from './Pages/pastPaper/AdminPastPaperPage.jsx';
+import NotesAiPage from './Pages/notes/NotesAiPage.jsx';
+
+import ContactUs from './Pages/Support/ContactUs.jsx';
 
 import FacultyList from './Pages/Module Management/faculties/FacultyList.jsx';
 import FacultyForm from './Pages/Module Management/faculties/FacultyForm.jsx';
@@ -34,23 +42,29 @@ import UserTimeTable from './Pages/TimeTable/UserTimeTable.jsx';
 function App() {
   return (
     <Router>
-      {/* Toast notifications added from incoming branch */}
-      <Toaster position="top-right" />
+      <div className="App">
 
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Signin />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/users" element={<User />} />
-        <Route path="/users/:id" element={<UserProfile />} />
-        <Route path="/employee/users" element={<User />} />
-        <Route path="/student-dashboard" element={<StudentDashboard />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      
+        
         <Route path="/timetable-generator" element={<TimeTableGenerator />} />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<Signin />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/users" element={<User />} />
+          <Route path="/student-dashboard" element={<StudentDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Faculties */}
+          <Route path="/resource-finder" element={<ResourceFinder />} />
+
+          <Route path="/users/:id" element={<UserProfile />} />
+
+
+
+          {/* Faculties */}
         <Route path="/faculties" element={<FacultyList />} />
         <Route path="/faculties/new" element={<FacultyForm />} />
         <Route path="/faculties/:id" element={<FacultyDetail />} />
@@ -73,8 +87,17 @@ function App() {
 
         {/* Profile Views */}
         <Route path="/profile/timetable" element={<UserTimeTable />} />
+        {/* Contact Us */}
+        <Route path="/contact" element={<ContactUs />} />
 
-      </Routes>
+          <Route path="/past-papers" element={<PastPaperPage />} />
+          <Route path="/quiz-history" element={<QuizHistoryPage />} />
+          <Route path="/admin/past-papers" element={<AdminPastPaperPage />} />
+          <Route path="/notes-ai" element={<NotesAiPage />} />
+
+
+        </Routes>
+      </div>
     </Router>
   );
 }

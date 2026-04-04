@@ -114,7 +114,7 @@ export default function StudentModules() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {['#', 'Module No.', 'Module Name', 'Description'].map(h => (
+                  {['#', 'Module No.', 'Module Name', 'Description', 'Actions'].map(h => (
                     <th key={h} className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">{h}</th>
                   ))}
                 </tr>
@@ -133,6 +133,22 @@ export default function StudentModules() {
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-500 max-w-xs">
                       {m.description || <span className="text-gray-300">—</span>}
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          to={`/past-papers?moduleName=${encodeURIComponent(m.moduleName)}`}
+                          className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                          Past Papers
+                        </Link>
+                        <Link
+                          to={`/notes-ai?moduleName=${encodeURIComponent(m.moduleName)}`}
+                          className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+                        >
+                          Notes AI
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
