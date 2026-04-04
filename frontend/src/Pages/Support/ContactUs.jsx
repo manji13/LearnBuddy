@@ -1,59 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import API_URL from '../../api/config';
-import logo from '../../assets/learnbuddy-logo.jpg';
-import NavBar from '../../Components/NavBar/NavBar'; // FIXED: Capital 'N'
+import NavBar from '../../Components/NavBar/NavBar';
 
 const ContactUs = () => {
-  // UI States
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
-  // Form States
+
   const [formData, setFormData] = useState({ name: '', phone: '', description: '' });
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
-  
+
   const navigate = useNavigate();
 
-  // Initial Open Animation Effect
   useEffect(() => {
-    const loadingTimer = setTimeout(() => {
+    const t = setTimeout(() => {
       setIsInitialLoading(false);
-      setTimeout(() => setIsMounted(true), 50);
-    }, 1500);
-
-    return () => clearTimeout(loadingTimer);
+      setTimeout(() => setIsMounted(true), 60);
+    }, 1000);
+    return () => clearTimeout(t);
   }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Clear error when user starts typing
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: '' });
-    }
+    if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: '' });
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Student name is required";
-    
-    // Basic phone number validation (digits only, at least 10 characters)
+    if (!formData.name.trim()) newErrors.name = 'Student name is required';
     const phoneRegex = /^[0-9]{10,}$/;
     if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
+      newErrors.phone = 'Phone number is required';
     } else if (!phoneRegex.test(formData.phone.replace(/[-+()\s]/g, ''))) {
-      newErrors.phone = "Enter a valid phone number";
+      newErrors.phone = 'Enter a valid phone number';
     }
-
     if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
+      newErrors.description = 'Description is required';
     } else if (formData.description.trim().length < 10) {
-      newErrors.description = "Description must be at least 10 characters";
+      newErrors.description = 'Description must be at least 10 characters';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -61,32 +49,18 @@ const ContactUs = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setApiError('');
-    
     if (!validateForm()) return;
-
     setIsSubmitting(true);
-    
     try {
       const response = await fetch(`${API_URL}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
-      
       const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to send message. Please try again.');
-      }
-      
-      // Show Success Animation
+      if (!response.ok) throw new Error(data.message || 'Failed to send message. Please try again.');
       setIsSuccess(true);
-      
-      // Redirect to home or dashboard after 3 seconds
-      setTimeout(() => {
-        navigate('/'); 
-      }, 3000);
-
+      setTimeout(() => navigate('/contact'), 3000);
     } catch (err) {
       setApiError(err.message);
     } finally {
@@ -95,168 +69,199 @@ const ContactUs = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50 font-sans text-slate-800 flex flex-col">
-      
-      {/* 1. NavBar stays perfectly at the top */}
-      <NavBar /> 
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+          @keyframes shimmer { to { background-position: 200%; } }
+          @keyframes bouncein {
+            0% { transform: scale(0.2); opacity: 0; }
+            55% { transform: scale(1.12); }
+            75% { transform: scale(0.94); }
+            100% { transform: scale(1); opacity: 1; }
+          }
+        `}
+      </style>
 
-      {/* 2. Main content area takes up remaining height and centers the card */}
-      <div className="relative flex-grow flex items-center justify-center p-4 overflow-hidden">
-        
-        {/* Decorative Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        </div>
+      <div className="min-h-screen flex flex-col bg-[#eef0f3] font-['Nunito',sans-serif] relative">
+        {/* Background Blobs */}
+        <div className="fixed rounded-full blur-[90px] opacity-15 pointer-events-none z-0 w-[450px] h-[450px] bg-[#f5a623] -top-[120px] -right-[100px]" />
+        <div className="fixed rounded-full blur-[90px] opacity-15 pointer-events-none z-0 w-[350px] h-[350px] bg-[#60a5fa] -bottom-[100px] -left-[80px]" />
 
-        {/* Back Button */}
-        <Link to="/" className="absolute top-4 left-6 z-20 bg-white/80 backdrop-blur-md hover:bg-white text-slate-700 hover:text-indigo-600 p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 hover:shadow-xl group">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </Link>
+        {/* NavBar */}
+        <NavBar />
 
-        {/* Initial Page Loading Animation */}
+        {/* Loading */}
         {isInitialLoading && (
-          <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white z-50 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative w-28 h-28">
-                <div className="absolute inset-0 border-4 border-indigo-200 rounded-full animate-spin border-t-indigo-600 border-r-indigo-600"></div>
-                <div className="absolute inset-0 border-4 border-transparent rounded-full animate-pulse border-t-teal-500"></div>
-                <div className="absolute inset-0 border-4 border-indigo-100 rounded-full animate-ping opacity-25"></div>
-                <img src={logo} alt="Logo" className="absolute inset-0 w-14 h-14 m-auto rounded-full object-cover border-2 border-indigo-300 shadow-lg" />
-              </div>
-              <p className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-teal-500 bg-clip-text text-transparent animate-pulse">Loading LearnBuddy...</p>
-            </div>
+          <div className="fixed inset-0 z-[999] bg-white flex flex-col items-center justify-center gap-4">
+            <div className="w-[52px] h-[52px] border-4 border-[#f0f0f0] border-t-[#f5a623] rounded-full animate-spin" />
+            <p className="text-[14px] font-bold text-[#9ca3af] animate-pulse">Loading LearnBuddy...</p>
           </div>
         )}
 
-        {/* Main Card with Mount Animation */}
-        <div className={`z-10 w-full max-w-md bg-white/90 backdrop-blur-sm rounded-3xl p-7 sm:p-9 relative overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.2),0_15px_30px_-10px_rgba(0,0,0,0.1)] transition-all duration-1000 ease-out transform ${isMounted ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} border border-white/50`}>
-          
-          {/* Animated Gradient Border */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-indigo-500 via-teal-500 to-indigo-500 opacity-20 blur-xl"></div>
-          
-          {/* Form Submission Loading Overlay */}
-          {isSubmitting && !isSuccess && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md rounded-3xl">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-16 h-16 border-4 border-indigo-200 rounded-full animate-spin border-t-indigo-600"></div>
-                <p className="text-indigo-600 font-semibold text-sm">Sending message...</p>
-              </div>
-            </div>
-          )}
-
-          {/* Success Animation Overlay */}
-          {isSuccess && (
-            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-md rounded-3xl transition-all duration-500">
-              <div className="w-24 h-24 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full flex items-center justify-center mb-5 shadow-2xl animate-bounce">
-                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Message Sent! 🎉</h3>
-              <p className="text-teal-600 text-sm font-semibold animate-pulse">We will get back to you soon.</p>
-            </div>
-          )}
-
-          <div className="text-center mb-8 relative">
-            <div className="relative inline-block">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-teal-400 rounded-full blur-xl opacity-60"></div>
-              <img src={logo} alt="LearnBuddy" className="relative w-16 h-16 mx-auto rounded-full border-3 border-white shadow-xl mb-4" />
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 via-indigo-600 to-teal-600 bg-clip-text text-transparent">
+        {/* Page */}
+        <main 
+          className={`flex-1 flex items-center justify-center pt-16 px-6 pb-20 relative z-10 transition-all duration-700 ease-in-out ${
+            isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-7'
+          }`}
+        >
+          <div className="w-full max-w-[1020px]">
+            <h1 className="text-center text-[clamp(2rem,5vw,2.8rem)] font-black text-[#1e2a3a] mb-[60px] tracking-[-0.5px]">
               Contact Us
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-indigo-500 to-teal-500 rounded-full mx-auto mt-3"></div>
-            <p className="text-slate-600 text-sm mt-3 font-medium">
-              Have a question or facing an issue? Let us know!
-            </p>
+            </h1>
+
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_1.9fr] gap-10 md:gap-[52px] items-start">
+              
+              {/* ── Left: Contact Info ── */}
+              <div className="flex flex-col gap-2 pt-1">
+                <div className="flex items-center gap-[18px] p-5 bg-white rounded-[18px] shadow-[0_4px_18px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_26px_rgba(0,0,0,0.1)]">
+                  <div className="w-12 h-12 bg-[#fff8ee] rounded-[13px] flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 24 24" className="w-[22px] h-[22px] stroke-[#f5a623] fill-none stroke-[1.8px]" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-extrabold text-[#1e2a3a] mb-0.5">Call</p>
+                    <p className="text-[13px] text-[#9ca3af] font-medium">+94-76-468-7979</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-[18px] p-5 bg-white rounded-[18px] shadow-[0_4px_18px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_26px_rgba(0,0,0,0.1)]">
+                  <div className="w-12 h-12 bg-[#fff8ee] rounded-[13px] flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 24 24" className="w-[22px] h-[22px] stroke-[#f5a623] fill-none stroke-[1.8px]" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2"/>
+                      <path d="M22 6L12 13 2 6"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-extrabold text-[#1e2a3a] mb-0.5">Email</p>
+                    <p className="text-[13px] text-[#9ca3af] font-medium">learnbuddysystem@gmail.com</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-[18px] p-5 bg-white rounded-[18px] shadow-[0_4px_18px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_26px_rgba(0,0,0,0.1)]">
+                  <div className="w-12 h-12 bg-[#fff8ee] rounded-[13px] flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 24 24" className="w-[22px] h-[22px] stroke-[#f5a623] fill-none stroke-[1.8px]" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-extrabold text-[#1e2a3a] mb-0.5">Location</p>
+                    <p className="text-[13px] text-[#9ca3af] font-medium">Malabe, Sri Lanka</p>
+                  </div>
+                </div>
+
+                <div className="mt-2 py-[18px] px-5 bg-white rounded-[18px] shadow-[0_4px_18px_rgba(0,0,0,0.06)] border-l-4 border-[#f5a623]">
+                  <p className="text-[13px] font-extrabold text-[#1e2a3a] mb-[5px]">Response Time</p>
+                  <p className="text-[13px] text-[#9ca3af] font-medium leading-[1.6]">
+                    We typically respond within <strong className="text-[#f5a623]">24–48 hours</strong> on business days.
+                  </p>
+                </div>
+              </div>
+
+              {/* ── Right: Form ── */}
+              <div className="bg-white rounded-[20px] sm:rounded-[26px] p-[30px] sm:px-[44px] sm:pt-[44px] sm:pb-[40px] shadow-[0_10px_50px_rgba(0,0,0,0.09)] relative overflow-hidden">
+                
+                {/* Shimmer line indicator at top */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#f5a623] via-[#fcd27a] to-[#f5a623] bg-[length:200%] animate-[shimmer_2.5s_linear_infinite]" />
+
+                {isSubmitting && !isSuccess && (
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-[4px] rounded-[26px] flex flex-col items-center justify-center gap-3.5 z-20">
+                    <div className="w-11 h-11 border-4 border-[#f0f0f0] border-t-[#f5a623] rounded-full animate-spin" />
+                    <p className="text-[14px] font-bold text-[#9ca3af]">Sending your message...</p>
+                  </div>
+                )}
+
+                {isSuccess && (
+                  <div className="absolute inset-0 bg-white/95 rounded-[26px] flex flex-col items-center justify-center gap-3 z-20 animate-[fadein_0.4s_ease]">
+                    <div className="w-[76px] h-[76px] bg-[#f5a623] rounded-full flex items-center justify-center shadow-[0_10px_32px_rgba(245,166,35,0.42)] animate-[bouncein_0.6s_cubic-bezier(0.36,0.07,0.19,0.97)]">
+                      <svg viewBox="0 0 24 24" className="w-[38px] h-[38px] stroke-white stroke-[3px] fill-none" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-[24px] font-black text-[#1e2a3a] m-0">Message Sent! 🎉</h3>
+                    <p className="text-[14px] text-[#f5a623] font-bold m-0">We'll get back to you soon.</p>
+                  </div>
+                )}
+
+                {apiError && (
+                  <div className="mb-[18px] px-[18px] py-[14px] bg-[#fff5f5] border-[1.5px] border-[#fecaca] rounded-[12px] text-[14px] text-[#dc2626] font-semibold flex items-center justify-between gap-3">
+                    <span>⚠️ {apiError}</span>
+                    <button className="bg-transparent border-none text-[#f87171] text-[22px] cursor-pointer leading-none p-0" onClick={() => setApiError('')}>×</button>
+                  </div>
+                )}
+
+                <form className="flex flex-col gap-[18px]" onSubmit={handleSubmit}>
+
+                  {/* Student Name */}
+                  <div className="flex flex-col gap-[7px]">
+                    <label className="text-[11px] font-extrabold text-[#b0b7c3] tracking-[0.1em] uppercase pl-0.5">Student Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Enter your full name"
+                      className={`w-full py-[15px] px-5 rounded-[13px] text-[15px] font-medium outline-none box-border transition-all duration-200 placeholder:text-[#c8cdd6]
+                        ${errors.name 
+                          ? 'bg-[#fff8f8] border-[1.5px] border-[#f87171] text-[#1e2a3a] focus:border-[#f87171] focus:ring-4 focus:ring-[#f87171]/15' 
+                          : 'bg-[#f9fafb] border-[1.5px] border-[#e9ecf0] text-[#1e2a3a] hover:border-[#d1d5db] hover:bg-white focus:border-[#f5a623] focus:ring-4 focus:ring-[#f5a623]/15 focus:bg-white'
+                        }`}
+                    />
+                    {errors.name && <span className="text-[12px] text-[#ef4444] font-bold pl-0.5 flex items-center gap-1">⚠ {errors.name}</span>}
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="flex flex-col gap-[7px]">
+                    <label className="text-[11px] font-extrabold text-[#b0b7c3] tracking-[0.1em] uppercase pl-0.5">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="0771234567"
+                      className={`w-full py-[15px] px-5 rounded-[13px] text-[15px] font-medium outline-none box-border transition-all duration-200 placeholder:text-[#c8cdd6]
+                        ${errors.phone 
+                          ? 'bg-[#fff8f8] border-[1.5px] border-[#f87171] text-[#1e2a3a] focus:border-[#f87171] focus:ring-4 focus:ring-[#f87171]/15' 
+                          : 'bg-[#f9fafb] border-[1.5px] border-[#e9ecf0] text-[#1e2a3a] hover:border-[#d1d5db] hover:bg-white focus:border-[#f5a623] focus:ring-4 focus:ring-[#f5a623]/15 focus:bg-white'
+                        }`}
+                    />
+                    {errors.phone && <span className="text-[12px] text-[#ef4444] font-bold pl-0.5 flex items-center gap-1">⚠ {errors.phone}</span>}
+                  </div>
+
+                  {/* Description */}
+                  <div className="flex flex-col gap-[7px]">
+                    <label className="text-[11px] font-extrabold text-[#b0b7c3] tracking-[0.1em] uppercase pl-0.5">Description</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      placeholder="Please describe your issue or question in detail..."
+                      className={`w-full py-[15px] px-5 rounded-[13px] text-[15px] font-medium outline-none box-border transition-all duration-200 placeholder:text-[#c8cdd6] resize-none h-[138px] leading-[1.65]
+                        ${errors.description 
+                          ? 'bg-[#fff8f8] border-[1.5px] border-[#f87171] text-[#1e2a3a] focus:border-[#f87171] focus:ring-4 focus:ring-[#f87171]/15' 
+                          : 'bg-[#f9fafb] border-[1.5px] border-[#e9ecf0] text-[#1e2a3a] hover:border-[#d1d5db] hover:bg-white focus:border-[#f5a623] focus:ring-4 focus:ring-[#f5a623]/15 focus:bg-white'
+                        }`}
+                    />
+                    {errors.description && <span className="text-[12px] text-[#ef4444] font-bold pl-0.5 flex items-center gap-1">⚠ {errors.description}</span>}
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting} 
+                    className="w-full p-[17px] mt-1 bg-[#f5a623] border-none rounded-[13px] text-white text-[14px] font-extrabold tracking-[0.1em] uppercase cursor-pointer shadow-[0_5px_20px_rgba(245,166,35,0.38)] transition-all duration-200 hover:bg-[#e09615] hover:shadow-[0_8px_28px_rgba(245,166,35,0.48)] hover:-translate-y-[1px] active:scale-[0.99] disabled:opacity-[0.55] disabled:cursor-not-allowed"
+                  >
+                    Send Now
+                  </button>
+                </form>
+              </div>
+
+            </div>
           </div>
-
-          {apiError && (
-            <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl text-sm text-center font-medium shadow-inner flex items-center justify-between gap-3">
-              <span>⚠️ {apiError}</span>
-              <button onClick={() => setApiError('')} className="text-red-500 hover:text-red-700 font-bold text-lg">×</button>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5 relative">
-            <div className="group">
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5 ml-1 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Student Name
-              </label>
-              <input 
-                type="text" 
-                name="name" 
-                value={formData.name} 
-                onChange={handleChange} 
-                className={`w-full px-5 py-3.5 border-2 ${errors.name ? 'border-red-300 bg-red-50 focus:border-red-500' : 'border-slate-200 bg-slate-50 focus:border-indigo-400'} rounded-2xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all duration-200 text-sm hover:bg-white group-hover:border-indigo-200`} 
-                placeholder="Enter your full name" 
-              />
-              {errors.name && <p className="text-red-500 text-xs mt-1.5 ml-1 flex items-center gap-1"><span>⚠️</span>{errors.name}</p>}
-            </div>
-
-            <div className="group">
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5 ml-1 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                Phone Number
-              </label>
-              <input 
-                type="tel" 
-                name="phone" 
-                value={formData.phone} 
-                onChange={handleChange} 
-                className={`w-full px-5 py-3.5 border-2 ${errors.phone ? 'border-red-300 bg-red-50 focus:border-red-500' : 'border-slate-200 bg-slate-50 focus:border-indigo-400'} rounded-2xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all duration-200 text-sm hover:bg-white group-hover:border-indigo-200`} 
-                placeholder="0771234567" 
-              />
-              {errors.phone && <p className="text-red-500 text-xs mt-1.5 ml-1 flex items-center gap-1"><span>⚠️</span>{errors.phone}</p>}
-            </div>
-
-            <div className="group">
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5 ml-1 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
-                </svg>
-                Description
-              </label>
-              <textarea 
-                name="description" 
-                rows="4"
-                value={formData.description} 
-                onChange={handleChange} 
-                className={`w-full px-5 py-3.5 border-2 ${errors.description ? 'border-red-300 bg-red-50 focus:border-red-500' : 'border-slate-200 bg-slate-50 focus:border-indigo-400'} rounded-2xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all duration-200 text-sm hover:bg-white resize-none group-hover:border-indigo-200`} 
-                placeholder="Please describe your issue or question in detail..." 
-              ></textarea>
-              {errors.description && <p className="text-red-500 text-xs mt-1.5 ml-1 flex items-center gap-1"><span>⚠️</span>{errors.description}</p>}
-            </div>
-            
-            <button 
-              type="submit" 
-              className="w-full mt-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-teal-500 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-2xl transform transition-all duration-300 active:scale-[0.98] cursor-pointer text-sm tracking-wide hover:bg-gradient-to-r hover:from-indigo-700 hover:via-indigo-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-                Submit Message
-              </span>
-            </button>
-          </form>
-
-          {/* Footer Note */}
-          <p className="text-center text-xs text-slate-400 mt-6 pt-2 border-t border-slate-100">
-            We'll respond within 24-48 hours
-          </p>
-        </div>
+        </main>
       </div>
-    </div>
+    </>
   );
 };
 
