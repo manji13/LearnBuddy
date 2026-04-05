@@ -468,13 +468,14 @@ function AdminPastPaperPage() {
                   <th className="px-4 py-2 text-left font-medium text-slate-700">Module</th>
                   <th className="px-4 py-2 text-left font-medium text-slate-700">Semester</th>
                   <th className="px-4 py-2 text-left font-medium text-slate-700">Year</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-700">Status</th>
                   <th className="px-4 py-2 text-left font-medium text-slate-700">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
                 {pastPapers.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="px-4 py-6 text-center text-gray-500 text-sm">
+                    <td colSpan="6" className="px-4 py-6 text-center text-gray-500 text-sm">
                       No past papers found.
                     </td>
                   </tr>
@@ -486,6 +487,17 @@ function AdminPastPaperPage() {
                     <td className="px-4 py-2 text-gray-700">{paper.moduleName}</td>
                     <td className="px-4 py-2 text-gray-700">{paper.semester}</td>
                     <td className="px-4 py-2 text-gray-700">{paper.year}</td>
+                    <td className="px-4 py-2 text-xs font-medium">
+                      {paper.status === 'approved' ? (
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700 border border-emerald-200">
+                          Approved
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-amber-700 border border-amber-200">
+                          Pending
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-2 space-x-2 whitespace-nowrap">
                       <button
                         type="button"
@@ -494,6 +506,26 @@ function AdminPastPaperPage() {
                       >
                         Download
                       </button>
+                      {paper.status === 'pending' && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await axios.patch(`${API_BASE_URL}/api/pastpapers/${paper._id}/approve`);
+                              setSuccess('Past paper approved successfully');
+                              await fetchPastPapers(moduleFilter || undefined);
+                            } catch (approveErr) {
+                              console.error(approveErr);
+                              const message =
+                                approveErr.response?.data?.message || 'Failed to approve past paper';
+                              setError(message);
+                            }
+                          }}
+                          className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+                        >
+                          Approve
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleDelete(paper._id)}

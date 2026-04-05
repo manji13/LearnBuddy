@@ -61,6 +61,7 @@ const uploadPastPaper = async (req, res) => {
       year: Number(year),
       fileUrl,
       uploadedBy: uploadedBy || '',
+      status: 'approved',
     });
 
     return res.status(201).json({ success: true, data: pastPaper });
@@ -72,7 +73,12 @@ const uploadPastPaper = async (req, res) => {
 
 const getAllPastPapers = async (req, res) => {
   try {
-    const pastPapers = await PastPaper.find().sort({ createdAt: -1 });
+    const filter = {};
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+
+    const pastPapers = await PastPaper.find(filter).sort({ createdAt: -1 });
     return res.status(200).json({ success: true, data: pastPapers });
   } catch (error) {
     console.error('Error fetching past papers:', error);
@@ -82,7 +88,7 @@ const getAllPastPapers = async (req, res) => {
 
 const searchPastPapers = async (req, res) => {
   try {
-    const { moduleName, semester, year } = req.query;
+    const { moduleName, semester, year, status } = req.query;
 
     const filter = {};
 
@@ -99,6 +105,10 @@ const searchPastPapers = async (req, res) => {
       if (!Number.isNaN(parsedYear)) {
         filter.year = parsedYear;
       }
+    }
+
+    if (status) {
+      filter.status = status;
     }
 
     const pastPapers = await PastPaper.find(filter).sort({ createdAt: -1 });
@@ -157,6 +167,62 @@ const deletePastPaper = async (req, res) => {
   }
 };
 
+// Student upload: create a pending past paper for admin approval
+const uploadStudentPastPaper = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'PDF file is required' });
+    }
+
+    const { title, moduleName, semester, year, uploadedBy } = req.body;
+
+    if (!title || !moduleName || !semester || !year) {
+      return res.status(400).json({
+        success: false,
+        message: 'title, moduleName, semester and year are required',
+      });
+    }
+
+    const fileUrl = path.join('uploads', req.file.filename).replace(/\\/g, '/');
+
+    const pastPaper = await PastPaper.create({
+      title,
+      moduleName,
+      semester,
+      year: Number(year),
+      fileUrl,
+      uploadedBy: uploadedBy || '',
+      status: 'pending',
+    });
+
+    return res.status(201).json({ success: true, data: pastPaper });
+  } catch (error) {
+    console.error('Error uploading student past paper:', error);
+    return res.status(500).json({ success: false, message: 'Failed to upload past paper for approval' });
+  }
+};
+
+// Approve a pending past paper
+const approvePastPaper = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await PastPaper.findByIdAndUpdate(
+      id,
+      { status: 'approved' },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Past paper not found' });
+    }
+
+    return res.status(200).json({ success: true, data: updated });
+  } catch (error) {
+    console.error('Error approving past paper:', error);
+    return res.status(500).json({ success: false, message: 'Failed to approve past paper' });
+  }
+};
+
 module.exports = {
   upload,
   uploadPastPaper,
@@ -164,4 +230,6 @@ module.exports = {
   searchPastPapers,
   downloadPastPaper,
   deletePastPaper,
+   uploadStudentPastPaper,
+   approvePastPaper,
 };

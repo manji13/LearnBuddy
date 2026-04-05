@@ -128,6 +128,7 @@ const StudentNavbar = () => {
         </div>
 
         <NavLink to="/student/saved-modules">My Modules</NavLink>
+        <NavLink to="/student/saved-resources">My Saved Resources</NavLink>
         <NavLink to="/contact">Support</NavLink>
 
         {/* AI Bot Dropdown */}

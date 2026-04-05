@@ -1,33 +1,30 @@
 const mongoose = require('mongoose');
 
-const pastPaperSchema = new mongoose.Schema({
-  title: {
+const feedbackSchema = new mongoose.Schema({
+  resourceType: {
     type: String,
+    enum: ['note', 'pastpaper'],
     required: true,
-    trim: true,
   },
-  moduleName: {
-    type: String,
+  resourceId: {
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
-    trim: true,
   },
-  semester: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  year: {
+  rating: {
     type: Number,
+    min: 1,
+    max: 5,
     required: true,
   },
-  fileUrl: {
+  comment: {
     type: String,
-    required: true,
-  },
-  uploadedBy: {
-    type: String,
-    default: '',
     trim: true,
+    maxlength: 500,
+  },
+  name: {
+    type: String,
+    trim: true,
+    default: '',
   },
   status: {
     type: String,
@@ -40,4 +37,4 @@ const pastPaperSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('PastPaper', pastPaperSchema);
+module.exports = mongoose.model('Feedback', feedbackSchema);

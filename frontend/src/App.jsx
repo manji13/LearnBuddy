@@ -17,6 +17,7 @@ import PastPaperPage from './Pages/pastPaper/PastPaperPage.jsx';
 import QuizHistoryPage from './Pages/pastPaper/QuizHistoryPage.jsx';
 import AdminPastPaperPage from './Pages/pastPaper/AdminPastPaperPage.jsx';
 import NotesAiPage from './Pages/notes/NotesAiPage.jsx';
+import SavedResourcesPage from './Pages/student/SavedResourcesPage.jsx';
 
 import ContactUs from './Pages/Support/ContactUs.jsx';
 
@@ -35,6 +36,7 @@ import ModuleDetail from './Pages/Module Management/modules/ModuleDetails.jsx';
 import StudentFaculties from './Pages/Module Management/faculties/Studentfaculties.jsx';
 import StudentSemesters from './Pages/Module Management/modules/Studentsemesters.jsx';
 import StudentModules from './Pages/Module Management/semesters/Studentmodules.jsx';
+import StudentModuleDetails from './Pages/Module Management/modules/Studentmoduledetails.jsx';
 
 import TimeTableGenerator from './Pages/TimeTable/TimeTableGenerator.jsx';
 import UserTimeTable from './Pages/TimeTable/UserTimeTable.jsx';
@@ -84,14 +86,12 @@ function App() {
           <Route path="/student/faculties" element={<StudentFaculties />} />
           <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
           <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
-        {/* Modules */}
+          <Route path="/student/modules/:moduleId" element={<StudentModuleDetails />} />
+        {/* Modules (Admin) */}
         <Route path="/modules" element={<ModuleList />} />
         <Route path="/modules/new" element={<ModuleForm />} />
         <Route path="/modules/:id" element={<ModuleDetail />} />
         <Route path="/modules/:id/edit" element={<ModuleForm />} />
-        <Route path="/student/faculties" element={<StudentFaculties />} />
-        <Route path="/student/faculties/:facultyId/semesters" element={<StudentSemesters />} />
-        <Route path="/student/faculties/:facultyId/semesters/:semesterId/modules" element={<StudentModules />} />
           
           <Route path="/student/saved-modules" element={<MyModules />} />
 
@@ -106,6 +106,8 @@ function App() {
           <Route path="/quiz-history" element={<QuizHistoryPage />} />
           <Route path="/admin/past-papers" element={<AdminPastPaperPage />} />
           <Route path="/notes-ai" element={<NotesAiPage />} />
+          <Route path="/admin/lecture-notes" element={<NotesAiPage />} />
+          <Route path="/student/saved-resources" element={<SavedResourcesPage />} />
           
 
 

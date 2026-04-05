@@ -119,7 +119,7 @@ const EmployeeNavbar = () => {
                     </div>
                   </Link>
                   <Link 
-                    to="/notes-ai" 
+                    to="/admin/lecture-notes" 
                     className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                     onClick={() => setIsManageOpen(false)}
                   >

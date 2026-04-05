@@ -25,6 +25,15 @@ const noteSchema = new mongoose.Schema({
     default: '',
     trim: true,
   },
+  status: {
+    type: String,
+    enum: ['pending', 'approved'],
+    default: 'approved',
+  },
+  views: {
+    type: Number,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

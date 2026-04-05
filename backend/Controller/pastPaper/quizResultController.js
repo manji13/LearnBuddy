@@ -64,3 +64,79 @@ exports.getUserQuizResults = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to load quiz results' });
   }
 };
+
+// GET /api/pastpapers/weak-areas?userId=...&threshold=60
+exports.getWeakAreas = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const threshold = Number(req.query.threshold) || 60;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required' });
+    }
+
+    const results = await QuizResult.find({ user: userId })
+      .populate('pastPaper', 'title moduleName semester year')
+      .lean();
+
+    const byModule = {};
+
+    results.forEach((r) => {
+      const paper = r.pastPaper;
+      if (!paper || !paper.moduleName || !r.totalQuestions) return;
+
+      const percent = (r.score / r.totalQuestions) * 100;
+      if (percent >= threshold) return;
+
+      const key = paper.moduleName;
+      if (!byModule[key]) {
+        byModule[key] = {
+          moduleName: paper.moduleName,
+          attempts: 0,
+          lowAttempts: 0,
+          percentSum: 0,
+          papers: {},
+        };
+      }
+
+      const bucket = byModule[key];
+      bucket.attempts += 1;
+      bucket.lowAttempts += 1;
+      bucket.percentSum += percent;
+
+      const pid = String(paper._id);
+      if (!bucket.papers[pid]) {
+        bucket.papers[pid] = {
+          id: paper._id,
+          title: paper.title,
+          semester: paper.semester,
+          year: paper.year,
+          lowAttempts: 0,
+        };
+      }
+      bucket.papers[pid].lowAttempts += 1;
+    });
+
+    const weakAreas = Object.values(byModule)
+      .map((bucket) => {
+        const avgPercent = bucket.lowAttempts ? bucket.percentSum / bucket.lowAttempts : 0;
+        const suggestedPastPapers = Object.values(bucket.papers)
+          .sort((a, b) => b.lowAttempts - a.lowAttempts)
+          .slice(0, 3);
+
+        return {
+          moduleName: bucket.moduleName,
+          attempts: bucket.attempts,
+          lowAttempts: bucket.lowAttempts,
+          avgWeakScore: Math.round(avgPercent),
+          suggestedPastPapers,
+        };
+      })
+      .sort((a, b) => b.lowAttempts - a.lowAttempts);
+
+    return res.json({ success: true, data: weakAreas });
+  } catch (err) {
+    console.error('Error computing weak areas:', err);
+    return res.status(500).json({ success: false, message: 'Failed to compute weak areas' });
+  }
+};

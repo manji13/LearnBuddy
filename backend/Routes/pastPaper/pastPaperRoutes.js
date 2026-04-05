@@ -6,7 +6,7 @@ const examAnalysisController = require('../../Controller/pastPaper/examAnalysisC
 
 const router = express.Router();
 
-// Helper to handle multer errors and then call controller
+// Helper to handle multer errors and then call controller (admin upload)
 router.post('/upload', (req, res) => {
   pastPaperController.upload.single('file')(req, res, (err) => {
     if (err) {
@@ -16,10 +16,23 @@ router.post('/upload', (req, res) => {
   });
 });
 
+// Student upload endpoint: creates a pending past paper for approval
+router.post('/upload-student', (req, res) => {
+  pastPaperController.upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
+    }
+    return pastPaperController.uploadStudentPastPaper(req, res);
+  });
+});
+
 router.get('/', pastPaperController.getAllPastPapers);
 router.get('/search', pastPaperController.searchPastPapers);
 router.get('/download/:id', pastPaperController.downloadPastPaper);
 router.delete('/:id', pastPaperController.deletePastPaper);
+
+// Approval for student-submitted past papers
+router.patch('/:id/approve', pastPaperController.approvePastPaper);
 
 // AI QA generation
 router.post('/generate-qa/:id', qaController.generateQAFromPDF);
@@ -30,5 +43,6 @@ router.post('/analyse-exam/:id', examAnalysisController.analyseExamFromPDF);
 // Quiz results (per student)
 router.post('/quiz-results', quizResultController.createQuizResult);
 router.get('/quiz-results', quizResultController.getUserQuizResults);
+router.get('/weak-areas', quizResultController.getWeakAreas);
 
 module.exports = router;

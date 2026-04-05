@@ -7,6 +7,7 @@ function QuizHistoryPage() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [weakAreas, setWeakAreas] = useState([]);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -23,6 +24,11 @@ function QuizHistoryPage() {
         });
 
         setResults(res.data.data || []);
+
+        const weakRes = await axios.get(`${API_BASE_URL}/api/pastpapers/weak-areas`, {
+          params: { userId },
+        });
+        setWeakAreas(weakRes.data.data || []);
       } catch (err) {
         console.error(err);
         const message = err.response?.data?.message || 'Failed to load quiz history';
@@ -54,13 +60,14 @@ function QuizHistoryPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-md p-6 border border-slate-100">
-          {loading ? (
-            <p className="text-sm text-slate-600">Loading quiz history...</p>
-          ) : results.length === 0 ? (
-            <p className="text-sm text-slate-600">No quiz attempts recorded yet.</p>
-          ) : (
-            <div className="overflow-x-auto">
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+            {loading ? (
+              <p className="text-sm text-slate-600">Loading quiz history...</p>
+            ) : results.length === 0 ? (
+              <p className="text-sm text-slate-600">No quiz attempts recorded yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-50">
                   <tr>
@@ -107,6 +114,62 @@ function QuizHistoryPage() {
                   })}
                 </tbody>
               </table>
+              </div>
+            )}
+          </div>
+
+          {/* Weak areas summary */}
+          {!loading && weakAreas.length > 0 && (
+            <div className="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+              <h2 className="text-lg font-semibold text-slate-900 mb-2">Topics to review</h2>
+              <p className="text-xs text-slate-500 mb-4">
+                Based on quizzes where your score was below 60%, these modules and past papers are recommended for extra revision.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {weakAreas.map((area) => (
+                  <div
+                    key={area.moduleName}
+                    className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 flex flex-col gap-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-sm font-semibold text-slate-900">{area.moduleName}</h3>
+                        <p className="text-[11px] text-slate-500">
+                          {area.lowAttempts} low-score attempt{area.lowAttempts > 1 ? 's' : ''} ·
+                          {' '}avg score {area.avgWeakScore}%
+                        </p>
+                      </div>
+                    </div>
+                    {area.suggestedPastPapers && area.suggestedPastPapers.length > 0 && (
+                      <div className="space-y-1 text-xs text-slate-700">
+                        <p className="font-medium text-slate-800">Suggested past papers:</p>
+                        <ul className="list-disc pl-4 space-y-0.5">
+                          {area.suggestedPastPapers.map((p) => (
+                            <li key={p.id}>
+                              {p.title}{' '}
+                              {p.year && <span className="text-slate-500">({p.year})</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <a
+                        href={`/notes-ai?moduleName=${encodeURIComponent(area.moduleName)}`}
+                        className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        Review lecture notes
+                      </a>
+                      <a
+                        href={`/past-papers?moduleName=${encodeURIComponent(area.moduleName)}`}
+                        className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+                      >
+                        Retry past papers
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

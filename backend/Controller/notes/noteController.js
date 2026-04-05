@@ -37,7 +37,7 @@ const upload = multer({
 
 exports.upload = upload;
 
-// POST handler after multer
+// POST handler after multer - admin/lecturer upload (auto-approved)
 exports.uploadNote = async (req, res) => {
   try {
     const { title, moduleName, topic, uploadedBy } = req.body;
@@ -60,6 +60,7 @@ exports.uploadNote = async (req, res) => {
       topic: topic || '',
       uploadedBy: uploadedBy || '',
       fileUrl: relativePath,
+      status: 'approved',
     });
 
     return res.status(201).json({ success: true, data: note });
@@ -69,10 +70,49 @@ exports.uploadNote = async (req, res) => {
   }
 };
 
+// Student upload (pending approval)
+exports.uploadStudentNote = async (req, res) => {
+  try {
+    const { title, moduleName, topic, uploadedBy } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'PDF file is required' });
+    }
+
+    if (!title || !moduleName) {
+      return res.status(400).json({ success: false, message: 'Title and Module Name are required' });
+    }
+
+    const relativePath = path
+      .join('uploads', 'notes', req.file.filename)
+      .replace(/\\/g, '/');
+
+    const note = await Note.create({
+      title,
+      moduleName,
+      topic: topic || '',
+      uploadedBy: uploadedBy || '',
+      fileUrl: relativePath,
+      status: 'pending',
+    });
+
+    return res.status(201).json({ success: true, data: note });
+  } catch (err) {
+    console.error('Error uploading student note:', err);
+    return res.status(500).json({ success: false, message: 'Failed to upload note for approval' });
+  }
+};
+
 // GET /api/notes
 exports.getAllNotes = async (req, res) => {
   try {
-    const notes = await Note.find().sort({ createdAt: -1 });
+    const { status } = req.query;
+    const filter = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    const notes = await Note.find(filter).sort({ createdAt: -1 });
     return res.json({ success: true, data: notes });
   } catch (err) {
     console.error('Error fetching notes:', err);
@@ -83,7 +123,7 @@ exports.getAllNotes = async (req, res) => {
 // GET /api/notes/search
 exports.searchNotes = async (req, res) => {
   try {
-    const { moduleName, topic } = req.query;
+    const { moduleName, topic, status } = req.query;
 
     const filter = {};
     if (moduleName) {
@@ -91,6 +131,9 @@ exports.searchNotes = async (req, res) => {
     }
     if (topic) {
       filter.topic = { $regex: topic, $options: 'i' };
+    }
+    if (status) {
+      filter.status = status;
     }
 
     const notes = await Note.find(filter).sort({ createdAt: -1 });
@@ -101,10 +144,34 @@ exports.searchNotes = async (req, res) => {
   }
 };
 
+// PATCH /api/notes/:id/approve
+exports.approveNote = async (req, res) => {
+  try {
+    const note = await Note.findByIdAndUpdate(
+      req.params.id,
+      { status: 'approved' },
+      { new: true }
+    );
+
+    if (!note) {
+      return res.status(404).json({ success: false, message: 'Note not found' });
+    }
+
+    return res.json({ success: true, data: note });
+  } catch (err) {
+    console.error('Error approving note:', err);
+    return res.status(500).json({ success: false, message: 'Failed to approve note' });
+  }
+};
+
 // GET /api/notes/download/:id
 exports.downloadNote = async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
+    const note = await Note.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
     if (!note) {
       return res.status(404).json({ success: false, message: 'Note not found' });
     }

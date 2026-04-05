@@ -25,6 +25,10 @@ function PastPaperPage() {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
 
+  // Bookmark state for past papers
+  const [savedPaperIds, setSavedPaperIds] = useState(new Set());
+
+
   // Guided filters: Faculty → Year → Semester → Module
   const [faculties, setFaculties] = useState([]);
   const [semesters, setSemesters] = useState([]);
@@ -44,11 +48,11 @@ function PastPaperPage() {
   const fetchPastPapers = async (moduleNameFilter) => {
     try {
       let url = `${API_BASE_URL}/api/pastpapers`;
-      const config = {};
+      const config = { params: { status: 'approved' } };
 
       if (moduleNameFilter) {
         url = `${API_BASE_URL}/api/pastpapers/search`;
-        config.params = { moduleName: moduleNameFilter };
+        config.params = { moduleName: moduleNameFilter, status: 'approved' };
       }
 
       const res = await axios.get(url, config);
@@ -56,6 +60,23 @@ function PastPaperPage() {
     } catch (err) {
       console.error(err);
       setError('Failed to load past papers');
+    }
+  };
+
+  // Load existing bookmarks for past papers for the current user
+  const fetchPastPaperBookmarks = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return;
+
+      const res = await axios.get(`${API_BASE_URL}/api/bookmarks`, {
+        params: { userId, resourceType: 'pastpaper' },
+      });
+      const items = res.data?.data || [];
+      const ids = new Set(items.map((b) => b.resourceId));
+      setSavedPaperIds(ids);
+    } catch (err) {
+      console.error('Failed to load past paper bookmarks', err);
     }
   };
 
@@ -88,6 +109,7 @@ function PastPaperPage() {
     } else {
       fetchPastPapers();
     }
+    fetchPastPaperBookmarks();
   }, [location.search]);
 
   // When faculty changes, clear deeper selections and show all papers again
@@ -172,7 +194,7 @@ function PastPaperPage() {
     resetMessages();
 
     try {
-      const params = {};
+      const params = { status: 'approved' };
       if (search.moduleName) params.moduleName = search.moduleName;
       if (search.semester) params.semester = search.semester;
       if (search.year) params.year = search.year;
@@ -197,6 +219,28 @@ function PastPaperPage() {
 
   const handleDownload = (id) => {
     window.open(`${API_BASE_URL}/api/pastpapers/download/${id}`, '_blank');
+  };
+
+  const handleToggleSavePastPaper = async (paperId) => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      setError('Please sign in to save past papers.');
+      return;
+    }
+
+    try {
+      await axios.post(`${API_BASE_URL}/api/bookmarks`, {
+        userId,
+        resourceType: 'pastpaper',
+        resourceId: paperId,
+      });
+      setSavedPaperIds((prev) => new Set(prev).add(paperId));
+      setSuccess('Past paper saved to My Saved Resources.');
+    } catch (err) {
+      console.error('Failed to save past paper bookmark', err);
+      const message = err.response?.data?.message || 'Failed to save past paper';
+      setError(message);
+    }
   };
 
   const handleAnalyseExam = async (id) => {
@@ -568,6 +612,14 @@ function PastPaperPage() {
                           disabled={analysisLoading}
                         >
                           {analysisLoading ? 'Analysing…' : 'Exam insights'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSavePastPaper(paper._id)}
+                          className="inline-flex items-center rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 gap-1"
+                        >
+                          <span>{savedPaperIds.has(paper._id) ? '★' : '☆'}</span>
+                          <span>Save</span>
                         </button>
                       </div>
                     </td>
