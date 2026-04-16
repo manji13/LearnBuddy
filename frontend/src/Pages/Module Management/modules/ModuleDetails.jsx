@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Sidebar from '../../../Components/ModuleManagement/Sidebar.jsx'
-import Navbar from '../../../Components/NavBar/NavBar.jsx'
+import EmployeeNavbar from '../../../Components/NavBar/employeeNavbar';
+
 
 export default function ModuleDetail() {
   const { id } = useParams()
@@ -42,11 +42,11 @@ export default function ModuleDetail() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      <Navbar />
-       <Sidebar />
+      <EmployeeNavbar />
+
   
   
-   <div className="ml-56 flex-1 p-8">
+   <div className="max-w-8xl mx-auto p-6 ">
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-6 flex-wrap">
         <Link to="/faculties" className="hover:text-blue-600 transition-colors">Faculties</Link>
         <span>/</span>
@@ -69,6 +69,12 @@ export default function ModuleDetail() {
           <p className="text-sm text-gray-500 mt-1">{module.description || 'No description provided'}</p>
         </div>
         <div className="flex gap-2">
+          <Link
+            to={`/admin/past-papers?moduleName=${encodeURIComponent(module.moduleName)}`}
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-lg transition-colors shadow-sm"
+          >
+            Manage Past Papers
+          </Link>
           <Link to={`/modules/${id}/edit`} className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors shadow-sm">Edit</Link>
           <button onClick={handleDelete} className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 rounded-lg transition-colors">Delete</button>
         </div>
@@ -99,7 +105,6 @@ export default function ModuleDetail() {
 
       <div className="flex gap-3">
         {sem && <Link to={`/semesters/${sem._id}`} className="inline-flex items-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors shadow-sm">← Back to Semester</Link>}
-        <Link to="/modules" className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">All Modules</Link>
       </div>
     </div>
     </div>

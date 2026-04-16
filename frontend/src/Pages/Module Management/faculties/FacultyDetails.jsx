@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Sidebar from '../../../Components/ModuleManagement/Sidebar.jsx'
-import Navbar from '../../../Components/NavBar/NavBar.jsx'
+import EmployeeNavbar from '../../../Components/NavBar/employeeNavbar';
 
 export default function FacultyDetail() {
   const { id } = useParams()
@@ -47,10 +46,10 @@ export default function FacultyDetail() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      <Navbar />
-      <div className="flex">
-        <Sidebar />
-        <main className="ml-56 flex-1 p-8">
+     <EmployeeNavbar />
+     
+  
+        <main className="max-w-8xl mx-auto p-8">
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
@@ -138,6 +137,6 @@ export default function FacultyDetail() {
 
         </main>
       </div>
-    </div>
+    
   )
 }

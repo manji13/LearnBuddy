@@ -3,8 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Sidebar from '../../../Components/ModuleManagement/Sidebar.jsx'
-import Navbar from '../../../Components/NavBar/NavBar.jsx'
+import EmployeeNavbar from '../../../Components/NavBar/employeeNavbar';
 
 const selectCls = "w-full max-w-xs px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
 
@@ -60,11 +59,11 @@ export default function ModuleList() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      <Navbar />
-       <Sidebar />
+      <EmployeeNavbar />
+   
   
   
-   <div className="ml-56 flex-1 p-8">
+   <div className="max-w-8xl mx-auto p-6 ">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Modules</h1>
