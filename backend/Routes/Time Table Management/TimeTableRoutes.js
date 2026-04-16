@@ -14,6 +14,9 @@ router.delete('/:id', timeTableController.deleteTimeTable);
 // PUT update block status (Completed/Pending)
 router.put('/:id/block/:blockId', timeTableController.updateBlockStatus);
 
+// DELETE a specific block
+router.delete('/:id/block/:blockId', timeTableController.deleteBlock);
+
 // POST recalculate missed days
 router.post('/:id/recalculate', timeTableController.recalculateSchedule);
 

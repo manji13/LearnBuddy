@@ -278,6 +278,25 @@ exports.updateBlockStatus = async (req, res) => {
   }
 };
 
+// Delete a specific block
+exports.deleteBlock = async (req, res) => {
+  try {
+    const { id, blockId } = req.params;
+    
+    const timeTable = await TimeTable.findOneAndUpdate(
+      { _id: id },
+      { $pull: { generatedSchedule: { _id: blockId } } },
+      { new: true }
+    );
+
+    if (!timeTable) return res.status(404).json({ message: 'Timetable or block not found' });
+
+    res.status(200).json(timeTable);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 // Recalculate Missed Days
 exports.recalculateSchedule = async (req, res) => {
   try {
