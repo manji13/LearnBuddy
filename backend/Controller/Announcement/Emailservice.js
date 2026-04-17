@@ -1,6 +1,6 @@
-const nodemailer = require('nodemailer');
+const transporter = require('../../utils/emailTransporter');
 
-// ── Gmail transporter ─────────────────────────────────────────
+// ── Gmail transporter setup is centralized in backend/utils/emailTransporter.js
 // Add these to your .env file:
 //   EMAIL_USER=your_gmail@gmail.com
 //   EMAIL_PASS=your_gmail_app_password
@@ -9,23 +9,6 @@ const nodemailer = require('nodemailer');
 //   1. Google Account → Security → Enable 2-Step Verification
 //   2. Security → App Passwords → Generate for "Mail"
 //   3. Copy the 16-digit code into EMAIL_PASS (NOT your Gmail login password)
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-// Verify connection on server startup
-transporter.verify((error) => {
-  if (error) {
-    console.error('❌ Email transporter error:', error.message);
-  } else {
-    console.log('✅ Email transporter ready');
-  }
-});
 
 /**
  * Send announcement notification to all users
