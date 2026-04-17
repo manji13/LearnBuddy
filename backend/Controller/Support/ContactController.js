@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const transporter = require('../../utils/emailTransporter');
 
 exports.submitContactForm = async (req, res) => {
   try {
@@ -8,15 +8,6 @@ exports.submitContactForm = async (req, res) => {
     if (!name || !phone || !description) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
-
-    // Setup Nodemailer transporter (Using existing LearnBuddy Email setup)
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS, 
-      },
-    });
 
     // Send the email TO your system email, containing the student's details
     const mailOptions = {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import EmployeeNavbar from "../../Components/NavBar/employeeNavbar";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "http://localhost:8080/api";
 
 const authHeader = () => {
   const token = localStorage.getItem("token");

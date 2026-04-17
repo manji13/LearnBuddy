@@ -1,7 +1,7 @@
 const User = require('../../Model/User Management/UserModel.js');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const nodemailer = require('nodemailer');
+const transporter = require('../../utils/emailTransporter');
 
 // Generate JWT Token
 const generateToken = (id, role) => {
@@ -10,14 +10,7 @@ const generateToken = (id, role) => {
   });
 };
 
-// Setup Nodemailer transporter 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER, 
-    pass: process.env.EMAIL_PASS, 
-  },
-});
+// Setup Nodemailer transporter is handled in backend/utils/emailTransporter.js
 
 // @desc    Register a new user
 // @route   POST /api/auth/signup

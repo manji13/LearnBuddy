@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
 function NotesAiPage() {
   const [form, setForm] = useState({
@@ -864,7 +864,7 @@ function NotesAiPage() {
                 </tbody>
               </table>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-4">
                 {(!notes || notes.length === 0) && (
                   <p className="text-sm text-slate-500 col-span-full">
                     No lecture notes uploaded yet.

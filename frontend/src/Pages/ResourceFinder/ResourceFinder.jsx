@@ -78,7 +78,7 @@ const ResourceFinder = () => {
     if (!token || !userId) return;
     try {
       setError('');
-      const response = await axios.get('http://localhost:5000/api/resources/history', axiosConfig);
+      const response = await axios.get('http://localhost:8080/api/resources/history', axiosConfig);
       setHistory(response.data.data);
     } catch (err) {
       console.error("Error fetching history", err);
@@ -105,7 +105,7 @@ const ResourceFinder = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/resources/search', 
+        'http://localhost:8080/api/resources/search', 
         { query: trimmedQuery }, 
         axiosConfig
       );
@@ -148,7 +148,7 @@ const ResourceFinder = () => {
 
     setTimeout(async () => {
       try {
-        await axios.delete(`http://localhost:5000/api/resources/history/${id}`, axiosConfig);
+        await axios.delete(`http://localhost:8080/api/resources/history/${id}`, axiosConfig);
         setHistory((prev) => prev.filter((item) => item._id !== id));
         if (activeHistory?._id === id) {
           setActiveHistory(null);
@@ -166,7 +166,7 @@ const ResourceFinder = () => {
   const handleClearHistory = async () => {
     if (!window.confirm('Clear all history? This action cannot be undone.')) return;
     try {
-      await axios.delete('http://localhost:5000/api/resources/history', axiosConfig);
+      await axios.delete('http://localhost:8080/api/resources/history', axiosConfig);
       setHistory([]);
       setActiveHistory(null);
       setCurrentResults([]);
