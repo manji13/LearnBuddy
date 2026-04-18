@@ -1,6 +1,5 @@
 const User = require('../../Model/User Management/UserModel.js');
 const jwt = require('jsonwebtoken');
-const axios = require('axios');
 const nodemailer = require('nodemailer');
 
 // Generate JWT Token
@@ -23,20 +22,7 @@ const transporter = nodemailer.createTransport({
 // @route   POST /api/auth/signup
 exports.signup = async (req, res) => {
   try {
-    const { fullName, email, phoneNumber, campus, faculty, password, role, profileImage, captchaToken } = req.body;
-
-    if (!captchaToken) {
-      return res.status(400).json({ message: 'CAPTCHA token is missing. Are you a bot?' });
-    }
-
-    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
-    
-    const captchaResponse = await axios.post(verifyUrl);
-
-    if (!captchaResponse.data.success) {
-      return res.status(400).json({ message: 'CAPTCHA verification failed. Please try again.' });
-    }
+    const { fullName, email, phoneNumber, campus, faculty, password, role, profileImage } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -50,9 +36,9 @@ exports.signup = async (req, res) => {
       email,
       phoneNumber,
       campus,
-      faculty, // Saved to DB
+      faculty,
       password,
-      profileImage,
+      profileImage, // Base64 image saved to DB
       role: assignedRole
     });
 
@@ -62,7 +48,7 @@ exports.signup = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        profileImage: user.profileImage,
+        profileImage: user.profileImage, // Sent back so frontend can store it
         token: generateToken(user._id, user.role),
       });
     } else {
@@ -86,7 +72,7 @@ exports.signin = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        profileImage: user.profileImage,
+        profileImage: user.profileImage, // Crucial: Sent on login so Navbar updates
         token: generateToken(user._id, user.role),
       });
     } else {
@@ -122,6 +108,9 @@ exports.updateUser = async (req, res) => {
       user.faculty = req.body.faculty || user.faculty; 
       user.role = req.body.role || user.role; 
       
+      if (req.body.profileImage) {
+        user.profileImage = req.body.profileImage;
+      }
       if (req.body.password) {
         user.password = req.body.password;
       }
@@ -132,6 +121,7 @@ exports.updateUser = async (req, res) => {
         fullName: updatedUser.fullName,
         email: updatedUser.email,
         role: updatedUser.role,
+        profileImage: updatedUser.profileImage,
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -177,7 +167,6 @@ exports.getUserById = async (req, res) => {
 // @route   GET /api/auth/analytics
 exports.getAnalytics = async (req, res) => {
   try {
-    // Only fetch students for the enrollment charts
     const students = await User.find({ role: 'Student' });
 
     const campusCounts = {};

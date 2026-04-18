@@ -1,7 +1,6 @@
 import API_URL from '../../api/config';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import ReCAPTCHA from "react-google-recaptcha";
 import logo from '../../assets/learnbuddy-logo.jpg';
 import topBgImage from '../../assets/Signup_img.jpg';
 
@@ -24,7 +23,7 @@ const Signup = () => {
 
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
-  const [captchaToken, setCaptchaToken] = useState(null);
+  
   const [fieldErrors, setFieldErrors] = useState({
     fullName: '',
     email: '',
@@ -115,11 +114,6 @@ const Signup = () => {
       return;
     }
 
-    if (!captchaToken) {
-      setError('Please complete the CAPTCHA verification.');
-      return;
-    }
-
     try {
       const response = await fetch(`${API_URL}/auth/signup`, {
         method: 'POST',
@@ -131,8 +125,7 @@ const Signup = () => {
           campus: formData.campus,
           faculty: formData.faculty,
           password: formData.password,
-          profileImage: formData.profileImage,
-          captchaToken: captchaToken 
+          profileImage: formData.profileImage
         })
       });
 
@@ -237,9 +230,6 @@ const Signup = () => {
                 className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.fullName ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
                 placeholder="John Doe"
               />
-              {fieldErrors.fullName && (
-                <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
-              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Email</label>
@@ -251,9 +241,6 @@ const Signup = () => {
                 className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.email ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
                 placeholder="john@example.com"
               />
-              {fieldErrors.email && (
-                <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-              )}
             </div>
           </div>
 
@@ -268,9 +255,6 @@ const Signup = () => {
                 className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.phoneNumber ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
                 placeholder="+1 234 567 8900"
               />
-              {fieldErrors.phoneNumber && (
-                <p className="mt-1 text-xs text-red-600">{fieldErrors.phoneNumber}</p>
-              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Campus</label>
@@ -288,9 +272,6 @@ const Signup = () => {
                 <option value="SLIIT - Kurunegala">SLIIT - Kurunegala</option>
                 <option value="Other">Other</option>
               </select>
-              {fieldErrors.campus && (
-                <p className="mt-1 text-xs text-red-600">{fieldErrors.campus}</p>
-              )}
             </div>
           </div>
 
@@ -309,9 +290,6 @@ const Signup = () => {
                 <option value="Management">Management</option>
                 <option value="Human Science">Human Science</option>
               </select>
-              {fieldErrors.faculty && (
-                <p className="mt-1 text-xs text-red-600">{fieldErrors.faculty}</p>
-              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1.5 ml-1">Password</label>
@@ -323,9 +301,6 @@ const Signup = () => {
                 className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.password ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
                 placeholder="••••••••"
               />
-              {fieldErrors.password && (
-                <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
-              )}
             </div>
           </div>
 
@@ -340,20 +315,10 @@ const Signup = () => {
                 className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-white ${fieldErrors.confirmPassword ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
                 placeholder="••••••••"
               />
-              {fieldErrors.confirmPassword && (
-                <p className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p>
-              )}
             </div>
           </div>
 
-          <div className="flex justify-center my-4 overflow-hidden rounded-xl">
-            <ReCAPTCHA
-              sitekey="6LfGd4AsAAAAAPIAbj2Ag4yy1OXdm37O-bcN6ef2"
-              onChange={(token) => setCaptchaToken(token)}
-            />
-          </div>
-
-          <button type="submit" className="w-full mt-2 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-indigo-200 hover:shadow-2xl transform transition-all active:scale-[0.97] cursor-pointer text-sm tracking-wide">
+          <button type="submit" className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-indigo-200 hover:shadow-2xl transform transition-all active:scale-[0.97] cursor-pointer text-sm tracking-wide">
             Sign Up
           </button>
         </form>
