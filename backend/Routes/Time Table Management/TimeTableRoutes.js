@@ -23,4 +23,7 @@ router.post('/:id/recalculate', timeTableController.recalculateSchedule);
 // GET export as ICS
 router.get('/:id/export', timeTableController.exportToICS);
 
+// POST AI Bot Schedule Update
+router.post('/:id/bot-update', timeTableController.botUpdateSchedule);
+
 module.exports = router;

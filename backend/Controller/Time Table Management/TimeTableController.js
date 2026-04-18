@@ -389,3 +389,74 @@ exports.exportToICS = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// AI Bot Schedule Update (Simulated for demonstration, ready for Gemini / OpenAI integration)
+exports.botUpdateSchedule = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { prompt } = req.body;
+    
+    if (!prompt) return res.status(400).json({ message: 'Prompt is required' });
+
+    const timeTable = await TimeTable.findById(id);
+    if (!timeTable) return res.status(404).json({ message: 'Timetable not found' });
+
+    // In a real scenario, you'd pass "timeTable.generatedSchedule" and "prompt" to Gemini/OpenAI
+    // using "Structured Output / Function Calling" here to get a brand new JSON schedule back.
+    // Example: 
+    // const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // const result = await model.generateContent(aiPromptWithScheduleData);
+    
+    // ----------------------------------------------------
+    // FALLBACK SIMULATION: Basic keyword logic to mock the AI.
+    // Demonstrating shifting schedule when user says "push"
+    // ----------------------------------------------------
+    let botReplyText = "I've analyzed your schedule! ";
+    let isModified = false;
+
+    if (prompt.toLowerCase().includes('push') || prompt.toLowerCase().includes('miss')) {
+      botReplyText += "I noticed you missed a session today. I've pushed your remaining pending tasks back by 1 hour so you can catch up tomorrow.";
+      
+      timeTable.generatedSchedule = timeTable.generatedSchedule.map(block => {
+        if (block.status === 'Pending' && !block.subject.includes('Break')) {
+          // Push dates forward by 1 day
+          let curDate = new Date(block.date);
+          curDate.setDate(curDate.getDate() + 1);
+          block.date = curDate;
+          
+          // Optionally shift timeSlot (simple mock shift)
+          if (block.timeSlot && block.timeSlot.includes(' - ')) {
+            let [start, end] = block.timeSlot.split(' - ');
+            // very naive shift replacing 9:00 with 10:00 just to show UI update 
+            const shiftTime = (tStr) => {
+              const match = tStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+              if(!match) return tStr;
+              let h = parseInt(match[1]);
+              h = (h + 1 > 12) ? 1 : h + 1; // naive shift 
+              return `${h}:${match[2]} ${match[3]}`;
+            };
+            block.timeSlot = `${shiftTime(start)} - ${shiftTime(end)}`;
+          }
+          isModified = true;
+        }
+        return block;
+      });
+    } else {
+      botReplyText = "I'm your AI assistant! Try asking me to 'Push my schedule back' or 'I missed my math session today'.";
+    }
+
+    if (isModified) {
+      await timeTable.save();
+    }
+
+    // Return the updated timetable and an AI response message
+    return res.status(200).json({ 
+      updatedTimetable: timeTable, 
+      botResponse: botReplyText 
+    });
+
+  } catch (error) {
+    console.error('Error in bot update:', error);
+    res.status(500).json({ message: 'Failed to process AI bot request' });
+  }
+};
