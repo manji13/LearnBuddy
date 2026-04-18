@@ -95,7 +95,9 @@ function App() {
           <Route path="/student/saved-modules" element={<MyModules />} />
 
           {/* Profile Views */}
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="/profile/timetable" element={<UserTimeTable />} />
+          <Route path="/profile/modules" element={<MyModules />} />
           
           {/* Contact Us */}
           <Route path="/contact" element={<ContactUs />} />

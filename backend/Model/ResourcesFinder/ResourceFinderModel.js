@@ -4,8 +4,7 @@ const mongoose = require('mongoose');
 const resourceHistorySchema = new mongoose.Schema({
     // Links this history to a specific user
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Ensure this matches your actual User model name
+        type: String,  // Changed to String to handle both MongoDB IDs and fake IDs
         required: true
     },
     searchQuery: {
@@ -16,8 +15,24 @@ const resourceHistorySchema = new mongoose.Schema({
         title: String,
         description: String,
         videoId: String,
-        thumbnail: String
+        thumbnail: String,
+        skillLevel: {
+            type: String,
+            enum: ['beginner', 'intermediate', 'advanced'],
+            default: 'intermediate'
+        },
+        duration: Number,  // in seconds
+        channel: String,
+        publishedAt: String,
+        resourceType: {
+            type: String,
+            default: 'video'
+        }
     }],
+    relatedTopics: {
+        type: [String],
+        default: []
+    },
     searchedAt: {
         type: Date,
         default: Date.now
