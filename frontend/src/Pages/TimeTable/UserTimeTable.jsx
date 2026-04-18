@@ -25,6 +25,12 @@ const UserTimeTable = () => {
   const [editingBlockId, setEditingBlockId] = useState(null);
   const [editFormData, setEditFormData] = useState({ subject: '', timeSlot: '' });
 
+  // Bot Chat State
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([{ sender: 'bot', text: 'Hi! I am your AI Study Assistant. Need me to adjust your schedule?' }]);
+  const [isChatTyping, setIsChatTyping] = useState(false);
+
   const navigate = useNavigate();
   
   // Try to use true logged in user, fallback to the hardcoded test user if not found
@@ -115,6 +121,31 @@ const UserTimeTable = () => {
     }
   };
 
+  const handleChatSubmit = async (e) => {
+    e.preventDefault();
+    if (!chatInput.trim() || timetables.length === 0) return;
+    
+    const userMsg = chatInput;
+    setChatMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+    setChatInput('');
+    setIsChatTyping(true);
+
+    try {
+      const tableId = timetables[0]._id;
+      const res = await axios.post(`${API_URL}/timetable/${tableId}/bot-update`, { prompt: userMsg });
+      
+      setChatMessages(prev => [...prev, { sender: 'bot', text: res.data.botResponse }]);
+      
+      // Update UI instantly
+      setTimetables(prev => prev.map(t => t._id === tableId ? res.data.updatedTimetable : t));
+      toast.success('AI successfully adjusted schedule!');
+    } catch (err) {
+      setChatMessages(prev => [...prev, { sender: 'bot', text: 'Oops! I encountered an error updating your schedule.' }]);
+    } finally {
+      setIsChatTyping(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
@@ -139,12 +170,23 @@ const UserTimeTable = () => {
                 <h1 className="text-3xl font-extrabold text-[#000000] tracking-tight">My Saved Time Tables</h1>
                 <p className="text-gray-500 mt-2">View and manage your AI-generated study schedules.</p>
               </div>
-              <button 
-                onClick={() => navigate('/timetable-generator')}
-                className="whitespace-nowrap px-5 py-2.5 bg-[#007aff] text-white font-bold hover:bg-blue-600 rounded-xl transition-all shadow-sm"
-              >
-                + Create New Plan
-              </button>
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <button 
+                  onClick={() => navigate('/student-dashboard')}
+                  className="whitespace-nowrap flex flex-1 justify-center md:flex-none items-center gap-2 px-5 py-2.5 bg-white text-gray-700 font-bold hover:bg-gray-50 border border-gray-200 rounded-xl transition-all shadow-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                  </svg>
+                  Home
+                </button>
+                <button 
+                  onClick={() => navigate('/timetable-generator')}
+                  className="whitespace-nowrap flex flex-1 justify-center md:flex-none px-5 py-2.5 bg-[#007aff] text-white font-bold hover:bg-blue-600 rounded-xl transition-all shadow-sm"
+                >
+                  + Create New Plan
+                </button>
+              </div>
             </div>
 
             {timetables.length === 0 ? (
@@ -450,6 +492,80 @@ const UserTimeTable = () => {
             </div>
             
           </div>
+        </div>
+      )}
+
+      {/* Floating AI Chatbot UI */}
+      {timetables.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end animate-in fade-in slide-in-from-bottom-4">
+          {isChatOpen && (
+            <div className="bg-white border text-left border-gray-200 rounded-2xl shadow-2xl w-80 md:w-96 mb-4 flex flex-col overflow-hidden animate-in zoom-in-95 origin-bottom-right">
+              {/* Chat Header */}
+              <div className="bg-indigo-600 text-white px-4 py-3 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🤖</span>
+                  <div>
+                    <h3 className="font-bold text-sm">Schedule Assistant</h3>
+                    <p className="text-[10px] text-indigo-200">I can automatically modify your timetable</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsChatOpen(false)} className="text-indigo-200 hover:text-white p-1">
+                  ✕
+                </button>
+              </div>
+              
+              {/* Messages Area */}
+              <div className="flex-1 p-4 min-h-[250px] max-h-[350px] overflow-y-auto bg-slate-50 flex flex-col gap-3">
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm ${msg.sender === 'user' ? 'bg-indigo-600 text-white rounded-tr-sm' : 'bg-white border border-slate-100 text-slate-700 rounded-tl-sm'}`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                {isChatTyping && (
+                  <div className="flex justify-start">
+                    <div className="bg-white border border-slate-100 rounded-2xl px-4 py-2 text-sm text-slate-500 rounded-tl-sm mt-1 animate-pulse flex space-x-1 items-center h-8">
+                       <span className="h-1.5 w-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                       <span className="h-1.5 w-1.5 bg-slate-400 rounded-full animate-bounce delay-75"></span>
+                       <span className="h-1.5 w-1.5 bg-slate-400 rounded-full animate-bounce delay-150"></span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Chat Input */}
+              <form onSubmit={handleChatSubmit} className="border-t border-gray-100 p-3 bg-white flex gap-2">
+                <input 
+                  type="text" 
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  placeholder="e.g. Push math back by 1 hr" 
+                  className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                <button type="submit" disabled={!chatInput.trim() || isChatTyping} className="bg-indigo-600 text-white rounded-xl p-2.5 hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+              </form>
+            </div>
+          )}
+          
+          {/* Chat FAB */}
+          {!isChatOpen && (
+            <button 
+              onClick={() => setIsChatOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2 group"
+            >
+              <div className="relative">
+                <span className="text-2xl">🤖</span>
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-indigo-600"></span>
+                </span>
+              </div>
+              <span className="font-bold text-sm hidden max-w-0 group-hover:max-w-xs group-hover:block transition-all overflow-hidden whitespace-nowrap px-1">Ask AI</span>
+            </button>
+          )}
         </div>
       )}
 

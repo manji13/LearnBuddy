@@ -159,8 +159,17 @@ const UserProfile = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-white/20 rounded-full blur-3xl animate-pulse"></div>
                 <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-white/20 rounded-full blur-3xl animate-pulse delay-700"></div>
-                <div className="relative h-full flex items-center justify-end px-8 lg:px-12">
-                  <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
+                <div className="relative h-full flex items-center justify-end px-8 lg:px-12 gap-4">
+                  <button 
+                    onClick={() => navigate('/student-dashboard')} 
+                    className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-full text-white text-sm font-bold transition-all shadow-lg border border-white/20 hover:scale-105"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    Go Home
+                  </button>
+                  <div className="hidden sm:flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
                     <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                     <span className="text-white/90 text-sm font-medium">Profile Active</span>
                   </div>
