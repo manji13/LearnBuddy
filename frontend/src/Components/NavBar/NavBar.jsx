@@ -141,7 +141,7 @@ const StudentNavbar = () => {
           {/* AI Bot Dropdown Menu */}
           <div className="absolute top-full left-0 mt-1 w-52 backdrop-blur-md bg-white/90 shadow-xl rounded-xl border border-white/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 flex flex-col overflow-hidden">
             <Link
-              to="/ai/note-summaries"
+              to="/summarize"
               className="px-4 py-3 text-sm font-medium text-slate-600 hover:bg-teal-50/80 hover:text-teal-600 hover:pl-5 transition-all duration-200 cursor-pointer border-b border-white/20"
             >
               Note Summaries

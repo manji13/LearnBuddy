@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-
+import NavBar from "../../Components/NavBar/NavBar";
 const API_URL = "http://localhost:5000/api";
 
 const authHeader = () => {
@@ -114,13 +114,14 @@ const AnnouncementForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-5 font-sans">
-      <div className="bg-white rounded-2xl p-10 max-w-2xl mx-auto shadow-lg">
+    <div className="min-h-screen bg-gray-50   font-sans">
+      <NavBar />
+      <div className="mt-6 bg-white rounded-2xl p-10 max-w-2xl mx-auto shadow-lg">
 
         {/* Back */}
         <button
           className="text-indigo-600 text-sm font-semibold bg-transparent border-0 cursor-pointer p-0 mb-7 flex items-center gap-1 hover:text-indigo-800 transition-colors"
-          onClick={() => navigate("/admin/announcements")}
+          onClick={() => navigate("/announcements")}
         >
           ← Back to Announcements
         </button>
@@ -216,7 +217,7 @@ const AnnouncementForm = () => {
             <button
               type="button"
               className="px-6 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => navigate("/admin/announcements")}
+              onClick={() => navigate("/announcements")}
             >
               Cancel
             </button>

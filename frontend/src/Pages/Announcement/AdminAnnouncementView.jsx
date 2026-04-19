@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-
+import NavBar from "../../Components/NavBar/NavBar";
 const API_URL = "http://localhost:5000/api";
 const authHeader = () => {
   const token = localStorage.getItem("token");
@@ -75,8 +75,8 @@ const AdminAnnouncementView = () => {
   const ann = announcement;
 
   return (
-    <div className="py-8 px-6 max-w-3xl mx-auto font-sans text-gray-800">
-
+   <div className="min-h-screen bg-gray-50 font-sans">
+<NavBar/>
       {successMessage && (
         <div className="px-4 py-3 rounded-lg mb-5 text-sm font-medium bg-emerald-100 text-emerald-800">✓ {successMessage}</div>
       )}
@@ -89,7 +89,7 @@ const AdminAnnouncementView = () => {
         {/* Nav */}
         <div className="flex justify-between items-center px-9 pt-7 pb-0 flex-wrap gap-3">
           <button className="text-indigo-600 text-sm font-semibold bg-transparent border-0 cursor-pointer p-0 hover:text-indigo-800"
-            onClick={() => navigate("/admin/announcements")}>← Back to Announcements</button>
+            onClick={() => navigate("/announcements")}>← Back to Announcements</button>
           <div className="flex gap-2.5">
             <button className="px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg text-xs font-semibold cursor-pointer hover:bg-green-100"
               onClick={() => navigate(`/admin/announcements/edit/${ann._id}`)}>✏️ Edit</button>

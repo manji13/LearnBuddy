@@ -46,6 +46,7 @@ import StudentAnnouncementView from './Pages/Announcement/StudentAnnouncementVie
 import AdminAnnouncementView from './Pages/Announcement/AdminAnnouncementView.jsx';
 import AdminAnnouncementForm from './Pages/Announcement/AdminAnnouncementForm.jsx';
 import MyModules from './Pages/Module Management/modules/SavedModule.jsx';
+import Summarize from './Pages/Summerize/summerize.jsx';
 
 function App() {
   return (
@@ -117,6 +118,7 @@ function App() {
           <Route path="/admin/announcements/:id" element={<AdminAnnouncementView />} />
           <Route path="/admin/announcements/edit/:id" element={<AdminAnnouncementForm />} />
           <Route path="/admin/announcements/new" element={<AdminAnnouncementForm />} />
+          <Route path="/summarize" element={<Summarize />} /> 
 
 
         </Routes>
