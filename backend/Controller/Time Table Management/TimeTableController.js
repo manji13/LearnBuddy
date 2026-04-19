@@ -22,9 +22,17 @@ exports.generateTimeTable = async (req, res) => {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
+    if (subjects.some(s => !s.name || !s.name.trim())) {
+      return res.status(400).json({ message: 'Subject names cannot be null or empty' });
+    }
+
+    if (hoursPerDay < 1) {
+      return res.status(400).json({ message: 'Focus hours cannot be less than 1 hour per day' });
+    }
+
     const examTargetDate = new Date(examDate);
     const today = new Date();
-    
+
     // Validate dates
     const timeDiff = examTargetDate.getTime() - today.getTime();
     const daysUntilExam = Math.ceil(timeDiff / (1000 * 3600 * 24));
@@ -40,7 +48,7 @@ exports.generateTimeTable = async (req, res) => {
       const iterDate = new Date(currentDate);
       iterDate.setDate(currentDate.getDate() + i);
       const dayName = iterDate.toLocaleDateString('en-US', { weekday: 'long' });
-      
+
       if (!unavailableDays || !unavailableDays.includes(dayName)) {
         studyDays.push({ date: iterDate, dayName });
       }
@@ -73,17 +81,17 @@ exports.generateTimeTable = async (req, res) => {
     for (const day of studyDays) {
       let hoursLeftInDay = hoursPerDay;
       let lastSubjectAssigned = null;
-      
+
       // Start clock based on preference (Morning=9am, Afternoon=1pm, Night=7pm, Mixed=9am)
-      let currentMinutes = 9 * 60; 
+      let currentMinutes = 9 * 60;
       if (studyPreference === 'Afternoon') currentMinutes = 13 * 60;
       if (studyPreference === 'Night') currentMinutes = 19 * 60;
-      
+
       const todayBusy = (unavailableTimeSlots || []).filter(slot => slot.day === day.dayName);
 
       while (hoursLeftInDay > 0) {
         let subjectsNeedingHours = subjectAllocations.filter(s => s.assignedHours < s.allocatedHours);
-        
+
         // Force Interleaving
         if (subjectsNeedingHours.length > 1 && lastSubjectAssigned) {
           const others = subjectsNeedingHours.filter(s => s.name !== lastSubjectAssigned.name);
@@ -92,7 +100,7 @@ exports.generateTimeTable = async (req, res) => {
 
         let selectedSubject;
         if (subjectsNeedingHours.length > 0) {
-          selectedSubject = subjectsNeedingHours.reduce((a, b) => 
+          selectedSubject = subjectsNeedingHours.reduce((a, b) =>
             (a.allocatedHours - a.assignedHours) > (b.allocatedHours - b.assignedHours) ? a : b
           );
         } else {
@@ -101,12 +109,12 @@ exports.generateTimeTable = async (req, res) => {
 
         let maxBlockSize = energyLevel === 'High' ? 2 : (energyLevel === 'Low' ? 1 : 1.5);
         if (selectedSubject.proficiency === 'Weak' && energyLevel !== 'High') {
-          maxBlockSize = Math.min(maxBlockSize, 1); 
+          maxBlockSize = Math.min(maxBlockSize, 1);
         }
 
         const needed = selectedSubject.allocatedHours - selectedSubject.assignedHours;
         const blockDurationHours = Math.min(maxBlockSize, hoursLeftInDay, needed > 0 ? needed : hoursLeftInDay);
-        
+
         if (blockDurationHours <= 0) break;
 
         let blockMins = blockDurationHours * 60;
@@ -121,16 +129,16 @@ exports.generateTimeTable = async (req, res) => {
             const [h2, m2] = busy.endTime.split(':').map(Number);
             const busyStart = h1 * 60 + m1;
             const busyEnd = h2 * 60 + m2;
-            
+
             if (currentMinutes < busyEnd && (currentMinutes + blockMins) > busyStart) {
               collision = true;
               if (busyEnd > latestBusyEnd) latestBusyEnd = busyEnd;
             }
           }
           if (collision) {
-             currentMinutes = latestBusyEnd;
+            currentMinutes = latestBusyEnd;
           } else {
-             tryingToPlace = false;
+            tryingToPlace = false;
           }
         }
 
@@ -154,7 +162,7 @@ exports.generateTimeTable = async (req, res) => {
         if (hoursLeftInDay > 0 && minBreakDuration > 0) {
           const breakMins = minBreakDuration;
           const breakDurationHours = Number((minBreakDuration / 60).toFixed(2));
-          
+
           if (hoursLeftInDay >= breakDurationHours) {
             // Collision check for the break
             tryingToPlace = true;
@@ -167,7 +175,7 @@ exports.generateTimeTable = async (req, res) => {
                 const [h2, m2] = busy.endTime.split(':').map(Number);
                 const busyStart = h1 * 60 + m1;
                 const busyEnd = h2 * 60 + m2;
-                
+
                 if (currentMinutes < busyEnd && (currentMinutes + breakMins) > busyStart) {
                   collision = true;
                   if (busyEnd > latestBusyEnd) latestBusyEnd = busyEnd;
@@ -182,7 +190,7 @@ exports.generateTimeTable = async (req, res) => {
             }
 
             const breakSlot = `${formatTime(currentMinutes)} - ${formatTime(currentMinutes + breakMins)}`;
-            
+
             generatedSchedule.push({
               date: day.date,
               dayName: day.dayName,
@@ -191,7 +199,7 @@ exports.generateTimeTable = async (req, res) => {
               durationHours: breakDurationHours,
               status: 'Completed'
             });
-            
+
             currentMinutes += breakMins;
             hoursLeftInDay -= breakDurationHours;
           }
@@ -236,27 +244,53 @@ exports.deleteTimeTable = async (req, res) => {
   }
 };
 
-// Update block details (Status, TimeSlot, Subject)
+// Update block details (Status, TimeSlot, Subject, Date)
 exports.updateBlockStatus = async (req, res) => {
   try {
     const { id, blockId } = req.params;
-    const { status, timeSlot, subject } = req.body;
-    
+    const { status, timeSlot, subject, date } = req.body;
+
     const timeTableCheck = await TimeTable.findOne({ _id: id, "generatedSchedule._id": blockId });
     if (!timeTableCheck) return res.status(404).json({ message: 'Block not found' });
 
     // Ensure we don't accidentally wipe status if only updating time
     const updateFields = {};
-    if (status) updateFields["generatedSchedule.$.status"] = status;
-    if (timeSlot) updateFields["generatedSchedule.$.timeSlot"] = timeSlot;
-    if (subject) updateFields["generatedSchedule.$.subject"] = subject;
+    if (status !== undefined) updateFields["generatedSchedule.$.status"] = status;
+    if (timeSlot !== undefined) updateFields["generatedSchedule.$.timeSlot"] = timeSlot;
+    if (subject !== undefined) updateFields["generatedSchedule.$.subject"] = subject;
+
+    // Automatically manage day shifts if a date is pushed manually
+    if (date !== undefined) {
+      updateFields["generatedSchedule.$.date"] = date;
+      const d = new Date(date);
+      updateFields["generatedSchedule.$.dayName"] = d.toLocaleDateString('en-US', { weekday: 'long' });
+    }
 
     const timeTable = await TimeTable.findOneAndUpdate(
       { _id: id, "generatedSchedule._id": blockId },
       { $set: updateFields },
       { new: true }
     );
+
+    res.status(200).json(timeTable);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// Delete a specific block
+exports.deleteBlock = async (req, res) => {
+  try {
+    const { id, blockId } = req.params;
     
+    const timeTable = await TimeTable.findOneAndUpdate(
+      { _id: id },
+      { $pull: { generatedSchedule: { _id: blockId } } },
+      { new: true }
+    );
+
+    if (!timeTable) return res.status(404).json({ message: 'Timetable or block not found' });
+
     res.status(200).json(timeTable);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
@@ -272,17 +306,17 @@ exports.recalculateSchedule = async (req, res) => {
 
     let missedHours = 0;
     const now = new Date();
-    
+
     timeTable.generatedSchedule.forEach(block => {
-      if (!block.subject.includes('Break') && block.status === 'Pending' && new Date(block.date) < new Date(now.setHours(0,0,0,0))) {
+      if (!block.subject.includes('Break') && block.status === 'Pending' && new Date(block.date) < new Date(now.setHours(0, 0, 0, 0))) {
         missedHours += block.durationHours;
-        block.status = 'Completed'; 
+        block.status = 'Completed';
       }
     });
 
     if (missedHours > 0) {
-      const futureBlocks = timeTable.generatedSchedule.filter(block => 
-        !block.subject.includes('Break') && new Date(block.date) >= new Date(now.setHours(0,0,0,0))
+      const futureBlocks = timeTable.generatedSchedule.filter(block =>
+        !block.subject.includes('Break') && new Date(block.date) >= new Date(now.setHours(0, 0, 0, 0))
       );
 
       if (futureBlocks.length > 0) {
@@ -292,7 +326,7 @@ exports.recalculateSchedule = async (req, res) => {
         });
       }
     }
-    
+
     await timeTable.save();
     res.status(200).json(timeTable);
   } catch (error) {
@@ -308,27 +342,27 @@ exports.exportToICS = async (req, res) => {
     if (!timeTable) return res.status(404).json({ message: 'Timetable not found' });
 
     let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//LearnBuddy//TimeTable Gen//EN\r\n";
-    
+
     timeTable.generatedSchedule.forEach((block, index) => {
       const startDate = new Date(block.date);
       // Attempt to parse HH:MM PM from timeSlot if available
       let startH = 9;
       let startM = 0;
       if (block.timeSlot && block.timeSlot.includes(' - ')) {
-         const firstTimeStr = block.timeSlot.split(' - ')[0]; // e.g. "4:00 PM"
-         const tMatch = firstTimeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-         if (tMatch) {
-            let h = parseInt(tMatch[1]);
-            const m = parseInt(tMatch[2]);
-            const ampm = tMatch[3].toUpperCase();
-            if (ampm === 'PM' && h !== 12) h += 12;
-            if (ampm === 'AM' && h === 12) h = 0;
-            startH = h;
-            startM = m;
-         }
+        const firstTimeStr = block.timeSlot.split(' - ')[0]; // e.g. "4:00 PM"
+        const tMatch = firstTimeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (tMatch) {
+          let h = parseInt(tMatch[1]);
+          const m = parseInt(tMatch[2]);
+          const ampm = tMatch[3].toUpperCase();
+          if (ampm === 'PM' && h !== 12) h += 12;
+          if (ampm === 'AM' && h === 12) h = 0;
+          startH = h;
+          startM = m;
+        }
       }
-      startDate.setHours(startH, startM, 0, 0); 
-      
+      startDate.setHours(startH, startM, 0, 0);
+
       const endDate = new Date(startDate);
       endDate.setMinutes(endDate.getMinutes() + (block.durationHours * 60));
 
@@ -353,5 +387,76 @@ exports.exportToICS = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// AI Bot Schedule Update (Simulated for demonstration, ready for Gemini / OpenAI integration)
+exports.botUpdateSchedule = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { prompt } = req.body;
+    
+    if (!prompt) return res.status(400).json({ message: 'Prompt is required' });
+
+    const timeTable = await TimeTable.findById(id);
+    if (!timeTable) return res.status(404).json({ message: 'Timetable not found' });
+
+    // In a real scenario, you'd pass "timeTable.generatedSchedule" and "prompt" to Gemini/OpenAI
+    // using "Structured Output / Function Calling" here to get a brand new JSON schedule back.
+    // Example: 
+    // const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // const result = await model.generateContent(aiPromptWithScheduleData);
+    
+    // ----------------------------------------------------
+    // FALLBACK SIMULATION: Basic keyword logic to mock the AI.
+    // Demonstrating shifting schedule when user says "push"
+    // ----------------------------------------------------
+    let botReplyText = "I've analyzed your schedule! ";
+    let isModified = false;
+
+    if (prompt.toLowerCase().includes('push') || prompt.toLowerCase().includes('miss')) {
+      botReplyText += "I noticed you missed a session today. I've pushed your remaining pending tasks back by 1 hour so you can catch up tomorrow.";
+      
+      timeTable.generatedSchedule = timeTable.generatedSchedule.map(block => {
+        if (block.status === 'Pending' && !block.subject.includes('Break')) {
+          // Push dates forward by 1 day
+          let curDate = new Date(block.date);
+          curDate.setDate(curDate.getDate() + 1);
+          block.date = curDate;
+          
+          // Optionally shift timeSlot (simple mock shift)
+          if (block.timeSlot && block.timeSlot.includes(' - ')) {
+            let [start, end] = block.timeSlot.split(' - ');
+            // very naive shift replacing 9:00 with 10:00 just to show UI update 
+            const shiftTime = (tStr) => {
+              const match = tStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+              if(!match) return tStr;
+              let h = parseInt(match[1]);
+              h = (h + 1 > 12) ? 1 : h + 1; // naive shift 
+              return `${h}:${match[2]} ${match[3]}`;
+            };
+            block.timeSlot = `${shiftTime(start)} - ${shiftTime(end)}`;
+          }
+          isModified = true;
+        }
+        return block;
+      });
+    } else {
+      botReplyText = "I'm your AI assistant! Try asking me to 'Push my schedule back' or 'I missed my math session today'.";
+    }
+
+    if (isModified) {
+      await timeTable.save();
+    }
+
+    // Return the updated timetable and an AI response message
+    return res.status(200).json({ 
+      updatedTimetable: timeTable, 
+      botResponse: botReplyText 
+    });
+
+  } catch (error) {
+    console.error('Error in bot update:', error);
+    res.status(500).json({ message: 'Failed to process AI bot request' });
   }
 };

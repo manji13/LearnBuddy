@@ -1,0 +1,167 @@
+/* ios-calendar.css - Mac/iOS Calendar Light Mode */
+
+.rbc-calendar {
+  background: #ffffff !important;
+  color: #000000;
+  border-radius: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  border: none !important;
+}
+
+.rbc-time-view, .rbc-month-view {
+  border: none !important;
+  background: #ffffff;
+}
+
+/* Header text */
+.rbc-header {
+  border-bottom: 1px solid #e5e5ea !important;
+  border-left: 1px solid #e5e5ea !important;
+  font-weight: 500 !important;
+  color: #3a3a3c;
+  padding: 10px 0 !important;
+  text-transform: none;
+  font-size: 13px;
+  background: #ffffff;
+}
+.rbc-header + .rbc-header {
+  border-left: 1px solid #e5e5ea !important;
+}
+
+/* Month view specifics */
+.rbc-month-row {
+  border-top: 1px solid #e5e5ea !important;
+}
+.rbc-day-bg {
+  border-left: 1px solid #e5e5ea !important;
+}
+.rbc-off-range-bg {
+  background-color: #f2f2f7 !important; 
+}
+
+/* Date numbers in month view */
+.rbc-date-cell {
+  text-align: right;
+  padding: 6px 8px;
+  font-size: 14px;
+}
+.rbc-date-cell > a {
+  color: #000000;
+}
+.rbc-off-range .rbc-date-cell > a {
+  color: #8e8e93 !important;
+}
+
+/* Today highlight */
+.rbc-today {
+  background-color: transparent !important;
+}
+.rbc-date-cell.rbc-now {
+  color: #ff3b30;
+  font-weight: bold;
+}
+.rbc-month-view .rbc-now > a {
+  background-color: #ff3b30;
+  color: white !important;
+  padding: 4px 8px;
+  border-radius: 50%;
+  display: inline-block;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* Time axis labels */
+.rbc-timeslot-group {
+  border-bottom: 1px solid #e5e5ea !important;
+  min-height: 50px !important; 
+}
+.rbc-time-slot {
+  border-top: none !important; 
+}
+.rbc-time-gutter .rbc-timeslot-group {
+  border-bottom: none !important;
+}
+.rbc-label {
+  color: #3a3a3c;
+  font-size: 11px;
+  font-weight: 500;
+  padding-right: 8px;
+  padding-top: 4px;
+}
+
+.rbc-time-content {
+  border-top: 1px solid #e5e5ea !important;
+}
+.rbc-time-content > * + * > * {
+  border-left: 1px solid #e5e5ea !important; 
+}
+
+/* Red current time indicator */
+.rbc-current-time-indicator {
+  background-color: #ff3b30 !important;
+  height: 2px !important;
+  z-index: 3;
+}
+.rbc-current-time-indicator::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ff3b30;
+}
+
+/* Toolbar styling (Light mode) */
+.rbc-toolbar {
+  margin-bottom: 20px !important;
+  color: #000000;
+}
+.rbc-toolbar-label {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+}
+.rbc-btn-group {
+  background: #f2f2f7;
+  padding: 4px;
+  border-radius: 8px;
+  display: flex !important;
+  gap: 4px;
+}
+.rbc-btn-group button {
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-weight: 500 !important;
+  color: #000000 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.rbc-btn-group button.rbc-active {
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+.rbc-btn-group button:hover:not(.rbc-active) {
+  background: #e5e5ea !important;
+}
+.rbc-button-link {
+  color: inherit;
+}
+
+/* Hide background coloring imposed by the wrapper so custom inner components work */
+.rbc-event {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+.rbc-event-content {
+  height: 100%;
+}
+.rbc-show-more {
+  color: #007aff !important;
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent !important;
+}

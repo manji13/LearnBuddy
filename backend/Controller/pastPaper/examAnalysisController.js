@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-const { PDFParse } = require('pdf-parse');
+const { PDFParse } = require('../../utils/pdfParse');
 
 const PastPaper = require('../../models/pastPaper/pastPaperModel');
 

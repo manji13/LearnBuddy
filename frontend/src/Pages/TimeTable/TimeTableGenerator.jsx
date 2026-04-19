@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -11,6 +11,11 @@ const TimeTableGenerator = () => {
   const [generatedSchedule, setGeneratedSchedule] = useState(null);
   const [userId] = useState(localStorage.getItem('userId') || '64bd2c9b4e3f4a2b9c8d1e7f'); 
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     examName: '',
     examDate: '',
@@ -87,9 +92,51 @@ const TimeTableGenerator = () => {
   };
 
   const validateForm = () => {
-    if (!formData.examName.trim()) { toast.error('Enter an exam name'); return false; }
-    if (!formData.examDate) { toast.error('Select an exam date'); return false; }
-    if (formData.subjects.some(sub => !sub.name.trim())) { toast.error('Fill in all subject names'); return false; }
+    let newErrors = {};
+
+    if (!formData.examName.trim()) { newErrors.examName = 'Enter an exam name'; }
+    if (!formData.examDate) { 
+      newErrors.examDate = 'Select an exam date'; 
+    } else {
+      const examTargetDate = new Date(formData.examDate);
+      const today = new Date();
+      const timeDiff = examTargetDate.getTime() - today.getTime();
+      const daysUntilExam = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      
+      if (daysUntilExam <= 0) {
+        newErrors.examDate = 'Exam date must be in the future';
+      } else if (daysUntilExam > 31) {
+        newErrors.examDate = 'Exam date cannot be more than 1 month away';
+      }
+    }
+
+    if (!formData.hoursPerDay || formData.hoursPerDay < 1) {
+      newErrors.hoursPerDay = 'Focus hours cannot be less than 1 hour per day';
+    }
+
+    if (!formData.subjects || formData.subjects.length === 0) {
+      newErrors.subjectsMsg = 'Please add at least one subject';
+    } else {
+      const subjectErrors = [];
+      let hasSubjectErrors = false;
+      formData.subjects.forEach((sub, idx) => {
+        if (!sub.name.trim()) {
+          subjectErrors[idx] = 'Subject name cannot be empty';
+          hasSubjectErrors = true;
+        }
+      });
+      if (hasSubjectErrors) {
+        newErrors.subjects = subjectErrors;
+      }
+    }
+    
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      toast.error('Please fix the errors in the form');
+      return false;
+    }
+    
     return true;
   };
 
@@ -265,11 +312,13 @@ const TimeTableGenerator = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Exam Name</label>
-                  <input type="text" name="examName" value={formData.examName} onChange={handleInputChange} placeholder="e.g. Final Semester Exam" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none bg-slate-50" />
+                  <input type="text" name="examName" value={formData.examName} onChange={handleInputChange} placeholder="e.g. Final Semester Exam" className={`w-full px-4 py-3 rounded-xl border transition-all outline-none bg-slate-50 ${errors.examName ? 'border-rose-500 focus:ring-2 focus:ring-rose-500' : 'border-slate-200 focus:ring-2 focus:ring-indigo-500'}`} />
+                  {errors.examName && <p className="text-rose-500 text-xs font-semibold mt-2">{errors.examName}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Exam Date</label>
-                  <input type="date" name="examDate" value={formData.examDate} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none bg-slate-50 " />
+                  <input type="date" name="examDate" value={formData.examDate} onChange={handleInputChange} className={`w-full px-4 py-3 rounded-xl border transition-all outline-none bg-slate-50 ${errors.examDate ? 'border-rose-500 focus:ring-2 focus:ring-rose-500' : 'border-slate-200 focus:ring-2 focus:ring-indigo-500'}`} />
+                  {errors.examDate && <p className="text-rose-500 text-xs font-semibold mt-2">{errors.examDate}</p>}
                 </div>
               </div>
             </div>
@@ -308,7 +357,8 @@ const TimeTableGenerator = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Hours Per Day (Focus Target)</label>
-                  <input type="number" name="hoursPerDay" min="1" max="24" value={formData.hoursPerDay} onChange={handleInputChange} className="w-full px-4 py-3 mb-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 transition-all outline-none bg-slate-50" />
+                  <input type="number" name="hoursPerDay" min="1" max="24" value={formData.hoursPerDay} onChange={handleInputChange} className={`w-full px-4 py-3 rounded-xl border transition-all outline-none bg-slate-50 ${errors.hoursPerDay ? 'border-rose-500 mb-1 focus:ring-2 focus:ring-rose-500' : 'border-slate-200 mb-4 focus:ring-2 focus:ring-teal-500'}`} />
+                  {errors.hoursPerDay && <p className="text-rose-500 text-xs font-semibold mb-4">{errors.hoursPerDay}</p>}
 
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Min Break Duration (Mins)</label>
                   <input type="number" name="minBreakDuration" value={formData.minBreakDuration} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 transition-all outline-none bg-slate-50" />
@@ -324,11 +374,15 @@ const TimeTableGenerator = () => {
               </div>
 
               <div className="mb-6 space-y-4">
+                {errors.subjectsMsg && <p className="text-rose-500 text-sm font-semibold mb-2">{errors.subjectsMsg}</p>}
                 {formData.subjects.map((subject, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row gap-4 items-center bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm">
-                    <input type="text" value={subject.name} onChange={(e) => handleSubjectChange(index, 'name', e.target.value)} placeholder="Subject Name" className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500 outline-none w-full bg-white" />
+                  <div key={index} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="flex-1 w-full">
+                      <input type="text" value={subject.name} onChange={(e) => handleSubjectChange(index, 'name', e.target.value)} placeholder="Subject Name" className={`px-4 py-3 rounded-xl border outline-none w-full bg-white ${errors.subjects && errors.subjects[index] ? 'border-rose-500 focus:ring-2 focus:ring-rose-500' : 'border-slate-200 focus:ring-2 focus:ring-purple-500'}`} />
+                      {errors.subjects && errors.subjects[index] && <p className="text-rose-500 text-xs font-semibold mt-2">{errors.subjects[index]}</p>}
+                    </div>
 
-                    <div className="flex bg-white rounded-xl border border-slate-200 overflow-hidden w-full sm:w-auto shrink-0 shadow-sm">
+                    <div className="flex bg-white rounded-xl border border-slate-200 overflow-hidden w-full sm:w-auto shrink-0 shadow-sm mt-1 sm:mt-0">
                       {proficiencies.map(prof => (
                         <button
                           type="button" key={prof}

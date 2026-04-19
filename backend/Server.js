@@ -19,6 +19,7 @@ const bookmarkRoutes = require('./Routes/Bookmark/bookmarkRoutes');
 const contactRoutes = require('./Routes/Support/ContactRoute.js'); 
 const savedModuleRoute = require('./Routes/Module Management/SavedmoduleRoute');
 const announcementRoutes = require('./Routes/Announcement/AnnouncementRoutes');
+const interactionRoutes = require('./Routes/Interaction/InteractionRoutes');
 
 const app = express();
 connectDB();
@@ -51,6 +52,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/resources', require('./Routes/ResourceFinder/ResourceFinderRoute.js'));
 app.use('/api/saved-modules', savedModuleRoute);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/interactions', interactionRoutes);
 
 app.get('/', (req, res) => res.send('LearnBuddy API is running...'));
 

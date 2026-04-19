@@ -18,7 +18,6 @@ import QuizHistoryPage from './Pages/pastPaper/QuizHistoryPage.jsx';
 import AdminPastPaperPage from './Pages/pastPaper/AdminPastPaperPage.jsx';
 import NotesAiPage from './Pages/notes/NotesAiPage.jsx';
 import SavedResourcesPage from './Pages/student/SavedResourcesPage.jsx';
-
 import ContactUs from './Pages/Support/ContactUs.jsx';
 
 import FacultyList from './Pages/Module Management/faculties/FacultyList.jsx';
@@ -97,7 +96,9 @@ function App() {
           <Route path="/student/saved-modules" element={<MyModules />} />
 
           {/* Profile Views */}
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="/profile/timetable" element={<UserTimeTable />} />
+          <Route path="/profile/modules" element={<MyModules />} />
           
           {/* Contact Us */}
           <Route path="/contact" element={<ContactUs />} />
@@ -109,7 +110,6 @@ function App() {
           <Route path="/notes-ai" element={<NotesAiPage />} />
           <Route path="/admin/lecture-notes" element={<NotesAiPage />} />
           <Route path="/student/saved-resources" element={<SavedResourcesPage />} />
-          
 
 
           <Route path="/announcements" element={<AnnouncementList />} />

@@ -128,7 +128,7 @@ export default function StudentModules() {
 
             {savedCount > 0 && (
               <Link
-                to="/student/my-modules"
+                to="/profile/modules"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
               >
                 📌 My Modules
