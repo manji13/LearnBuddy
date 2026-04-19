@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
-import NoteInteraction from '../../Components/Interaction/NoteInteraction';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function NotesAiPage() {
   const [form, setForm] = useState({
@@ -28,7 +27,6 @@ function NotesAiPage() {
 
   // Bookmark state: track which notes are saved for current user
   const [savedNoteIds, setSavedNoteIds] = useState(new Set());
-  const [noteScores, setNoteScores] = useState({});
 
   // Quiz state for AI questions (MCQ with 4 options + marks)
   const [quizQuestions, setQuizQuestions] = useState([]);
@@ -36,6 +34,17 @@ function NotesAiPage() {
   const [quizScore, setQuizScore] = useState(null);
 
   const [userRole, setUserRole] = useState(null);
+
+  // Aggregated rating info per note (fetched from feedback API)
+  const [noteRatings, setNoteRatings] = useState({});
+
+  // Feedback modal state (student-side feedback on notes)
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackNoteId, setFeedbackNoteId] = useState(null);
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(5);
+  const [feedbackComment, setFeedbackComment] = useState('');
+
   // Admin-only dropdown metadata: Faculty → Year → Semester → Module
   const [faculties, setFaculties] = useState([]);
   const [semesters, setSemesters] = useState([]);
@@ -45,7 +54,6 @@ function NotesAiPage() {
   const [selectedSemesterId, setSelectedSemesterId] = useState('');
   const [selectedModuleId, setSelectedModuleId] = useState('');
   const location = useLocation();
-  const navigate = useNavigate();
 
   const isAdminRoute = location.pathname.startsWith('/admin/');
 
@@ -72,13 +80,30 @@ function NotesAiPage() {
       const list = res.data.data || [];
       setNotes(list);
 
-      try {
-        const blkRes = await axios.get(`${API_BASE_URL}/api/interactions/bulk`);
-        setNoteScores(blkRes.data.likesMap || {});
-      } catch(e) {
-        console.error('Failed to load bulk scores', e);
+      // Load rating summaries for notes so we can show stars and averages
+      if (Array.isArray(list) && list.length > 0) {
+        const summaries = {};
+        await Promise.all(
+          list.map(async (note) => {
+            try {
+              const fbRes = await axios.get(`${API_BASE_URL}/api/feedback`, {
+                params: { resourceType: 'note', resourceId: note._id },
+              });
+              const items = fbRes.data.data || [];
+              if (!items.length) {
+                summaries[note._id] = { avg: null, count: 0 };
+                return;
+              }
+              const sum = items.reduce((acc, f) => acc + (f.rating || 0), 0);
+              const avg = sum / items.length;
+              summaries[note._id] = { avg, count: items.length };
+            } catch (fbErr) {
+              console.error('Failed to load feedback for note', note._id, fbErr);
+            }
+          })
+        );
+        setNoteRatings(summaries);
       }
-
     } catch (err) {
       console.error(err);
       setError('Failed to load lecture notes');
@@ -310,6 +335,45 @@ function NotesAiPage() {
     }
   };
 
+  const openFeedbackModal = (id) => {
+    resetMessages();
+    setFeedbackNoteId(id);
+    setFeedbackName('');
+    setFeedbackRating(5);
+    setFeedbackComment('');
+    setFeedbackModalOpen(true);
+  };
+
+  const handleSubmitFeedback = async (e) => {
+    e.preventDefault();
+    if (!feedbackNoteId) return;
+    resetMessages();
+
+    try {
+      await axios.post(`${API_BASE_URL}/api/feedback`, {
+        resourceType: 'note',
+        resourceId: feedbackNoteId,
+        rating: feedbackRating,
+        comment: feedbackComment,
+        name: feedbackName,
+      });
+      setSuccess('Thank you! Your feedback was submitted for review.');
+      setFeedbackModalOpen(false);
+      // Refresh notes + ratings so stars/admin table update
+      const params = new URLSearchParams(location.search);
+      const moduleNameParam = params.get('moduleName');
+      if (isAdminRoute) {
+        await fetchNotes(moduleNameParam || undefined);
+      } else {
+        await fetchNotes(moduleNameParam || undefined, 'approved');
+      }
+    } catch (err) {
+      console.error(err);
+      const message = err.response?.data?.message || 'Failed to submit feedback';
+      setError(message);
+    }
+  };
+
   const handleSummarize = async (id) => {
     resetMessages();
     setAiLoading(true);
@@ -455,13 +519,6 @@ function NotesAiPage() {
       <div className="max-w-6xl mx-auto">
         <header className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <button
-              onClick={() => navigate(-1)}
-              className="mb-4 inline-flex items-center text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors gap-1.5 group"
-            >
-              <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              Go Back
-            </button>
             <h1 className="text-3xl font-bold text-slate-900">Lecture Notes AI Assistant</h1>
             <p className="mt-2 text-sm text-slate-600 max-w-xl">
               Upload lecture slides or tutorial notes as PDF files. The system can generate a quick summary and
@@ -654,7 +711,7 @@ function NotesAiPage() {
                     <th className="px-4 py-2 text-left font-medium text-slate-700">Topic</th>
                     {isAdminRoute && (
                       <>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">Net Score</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">Rating</th>
                         <th className="px-4 py-2 text-left font-medium text-slate-700">Views</th>
                       </>
                     )}
@@ -682,8 +739,18 @@ function NotesAiPage() {
                         <>
                           <td className="px-4 py-2 text-xs text-slate-700">
                             {(() => {
-                              const score = noteScores[note._id] || 0;
-                              return <span className={`font-semibold ${score > 0 ? 'text-indigo-600' : score < 0 ? 'text-rose-600' : 'text-slate-500'}`}>{score} Likes</span>;
+                              const summary = noteRatings[note._id];
+                              const avg = summary?.avg;
+                              const count = summary?.count || 0;
+                              if (!avg || count === 0) {
+                                return <span className="text-slate-400">No ratings</span>;
+                              }
+                              const rounded = Math.round(avg * 10) / 10;
+                              return (
+                                <span>
+                                  {rounded.toFixed(1)} / 5 ({count})
+                                </span>
+                              );
                             })()}
                           </td>
                           <td className="px-4 py-2 text-xs text-slate-700">{Number(note.views || 0)}</td>
@@ -703,6 +770,29 @@ function NotesAiPage() {
                         </td>
                       )}
                       <td className="px-4 py-2 space-x-2 whitespace-nowrap">
+                        {!isAdminRoute && (
+                          <div className="mb-1 flex items-center gap-1 text-[11px] text-amber-500">
+                            {(() => {
+                              const summary = noteRatings[note._id];
+                              const avg = summary?.avg || 0;
+                              const count = summary?.count || 0;
+                              const stars = [];
+                              for (let i = 1; i <= 5; i += 1) {
+                                stars.push(
+                                  <span key={i}>{i <= Math.round(avg) ? '★' : '☆'}</span>
+                                );
+                              }
+                              return (
+                                <>
+                                  <span>{stars}</span>
+                                  <span className="ml-1 text-[10px] text-slate-500">
+                                    {count > 0 ? `(${count} rating${count > 1 ? 's' : ''})` : '(no ratings yet)'}
+                                  </span>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleDownload(note._id)}
@@ -710,6 +800,33 @@ function NotesAiPage() {
                         >
                           Download
                         </button>
+                        {!isAdminRoute && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleSummarize(note._id)}
+                              className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                              disabled={aiLoading}
+                            >
+                              {aiLoading ? 'Processing...' : 'AI Summary'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateQuestions(note._id)}
+                              className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+                              disabled={aiLoading}
+                            >
+                              {aiLoading ? 'Processing...' : 'AI Questions'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openFeedbackModal(note._id)}
+                              className="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                              Rate & feedback
+                            </button>
+                          </>
+                        )}
                         {isAdminRoute && (userRole === 'Employee' || userRole === 'Admin') ? (
                           <>
                             {note.status === 'pending' && (
@@ -747,94 +864,95 @@ function NotesAiPage() {
                 </tbody>
               </table>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {(!notes || notes.length === 0) && (
                   <p className="text-sm text-slate-500 col-span-full">
                     No lecture notes uploaded yet.
                   </p>
                 )}
                 {groupedNotesByTitle &&
-                  Object.entries(groupedNotesByTitle)
-                    .sort(([, groupA], [, groupB]) => {
-                      const scoreA = groupA.reduce((acc, n) => acc + (noteScores[n._id] || 0), 0);
-                      const scoreB = groupB.reduce((acc, n) => acc + (noteScores[n._id] || 0), 0);
-                      return scoreB - scoreA;
-                    })
-                    .map(([title, group]) => {
+                  Object.entries(groupedNotesByTitle).map(([title, group]) => {
                     const first = group[0];
                     return (
                       <div
                         key={title}
-                        className="rounded-2xl border border-slate-100 bg-white p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow duration-200"
+                        className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 flex flex-col justify-between"
                       >
-                        <div className="mb-4">
-                          <h3 className="text-lg font-bold text-slate-800 tracking-tight">{title}</h3>
-                          <div className="mt-2 flex items-center gap-2">
-                            <span className="inline-flex items-center text-[10px] uppercase font-bold tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-md">
-                              {first.moduleName}
-                            </span>
-                            {first.topic && (
-                              <span className="inline-flex items-center text-[10px] uppercase font-bold tracking-wider text-teal-600 bg-teal-50 border border-teal-100 px-2.5 py-1 rounded-md">
-                                {first.topic}
-                              </span>
-                            )}
-                          </div>
+                        <div className="mb-3">
+                          <h3 className="text-sm font-semibold text-slate-900 line-clamp-2">{title}</h3>
+                          <p className="mt-1 text-[11px] text-slate-500">
+                            {first.moduleName}
+                            {first.topic ? ` · ${first.topic}` : ''}
+                          </p>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           {group.map((note) => {
+                            const summary = noteRatings[note._id];
+                            const avg = summary?.avg || 0;
+                            const count = summary?.count || 0;
+                            const stars = [];
+                            for (let i = 1; i <= 5; i += 1) {
+                              stars.push(
+                                <span key={i}>{i <= Math.round(avg) ? '★' : '☆'}</span>
+                              );
+                            }
+
                             return (
                               <div
                                 key={note._id}
-                                className="rounded-xl bg-slate-50/80 border border-slate-200 p-4 flex flex-col gap-3 transition-colors hover:bg-slate-100/80"
+                                className="rounded-lg bg-white border border-slate-200 p-3 flex flex-col gap-2"
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white px-2 py-0.5 rounded border border-slate-100">
-                                    Version / {note._id.slice(-4)}
+                                  <span className="text-[11px] font-medium text-slate-600">
+                                    Version {note._id.slice(-4)}
                                   </span>
+                                  <div className="flex items-center gap-1 text-[11px] text-amber-500">
+                                    <span>{stars}</span>
+                                    <span className="ml-1 text-[10px] text-slate-500">
+                                      {count > 0
+                                        ? `(${count} rating${count > 1 ? 's' : ''})`
+                                        : '(no ratings yet)'}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                <div className="flex flex-wrap gap-2 mt-1">
                                   <button
                                     type="button"
                                     onClick={() => handleDownload(note._id)}
-                                    className="rounded-lg border border-slate-300 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-1.5"
+                                    className="rounded-md border border-gray-300 px-3 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-50"
                                   >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                    <span>Download</span>
+                                    Download
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handleToggleSaveNote(note._id)}
-                                    className="rounded-lg border border-amber-200 px-3.5 py-1.5 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors shadow-sm flex items-center gap-1.5"
+                                    className="rounded-md border border-amber-300 px-3 py-1 text-[11px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 flex items-center gap-1"
                                   >
-                                    <span className="text-[12px]">{savedNoteIds.has(note._id) ? '★' : '☆'}</span>
+                                    <span>{savedNoteIds.has(note._id) ? '★' : '☆'}</span>
                                     <span>Save</span>
                                   </button>
-                                  
-                                  {/* Line separator */}
-                                  <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
-
-                                  <NoteInteraction noteId={note._id} noteTitle={note.title} onError={setError} onSuccess={setSuccess} />
-                                  
-                                  {/* Line separator */}
-                                  <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
-
                                   <button
                                     type="button"
                                     onClick={() => handleSummarize(note._id)}
-                                    className="rounded-lg bg-emerald-500 px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-600 transition-colors shadow-sm disabled:opacity-60 flex items-center gap-1.5"
+                                    className="rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
                                     disabled={aiLoading}
                                   >
-                                    <span>✨</span>
-                                    <span>{aiLoading ? 'Processing...' : 'AI Summary'}</span>
+                                    {aiLoading ? 'Processing...' : 'AI Summary'}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handleGenerateQuestions(note._id)}
-                                    className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-60 flex items-center gap-1.5"
+                                    className="rounded-md bg-indigo-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
                                     disabled={aiLoading}
                                   >
-                                    <span>🧠</span>
-                                    <span>{aiLoading ? 'Processing...' : 'AI Questions'}</span>
+                                    {aiLoading ? 'Processing...' : 'AI Questions'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => openFeedbackModal(note._id)}
+                                    className="rounded-md border border-gray-300 px-3 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-50"
+                                  >
+                                    Rate & feedback
                                   </button>
                                 </div>
                               </div>
@@ -1002,7 +1120,75 @@ function NotesAiPage() {
           </div>
         )}
 
-
+        {/* Feedback Modal (student-side) */}
+        {feedbackModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 relative">
+              <button
+                type="button"
+                onClick={() => setFeedbackModalOpen(false)}
+                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+              <h3 className="text-lg font-semibold text-slate-900 mb-1">Rate this note</h3>
+              <p className="text-xs text-slate-500 mb-4">
+                Share a short rating and comment to help lecturers and other students understand how useful this note is.
+              </p>
+              <form onSubmit={handleSubmitFeedback} className="space-y-3">
+                <div className="flex flex-col">
+                  <label className="text-xs font-medium text-slate-700 mb-1">Your name (optional)</label>
+                  <input
+                    type="text"
+                    value={feedbackName}
+                    onChange={(e) => setFeedbackName(e.target.value)}
+                    className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g. IT student"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-xs font-medium text-slate-700 mb-1">Rating</label>
+                  <select
+                    value={feedbackRating}
+                    onChange={(e) => setFeedbackRating(Number(e.target.value))}
+                    className="rounded-md border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value={5}>5 - Excellent</option>
+                    <option value={4}>4 - Very good</option>
+                    <option value={3}>3 - Average</option>
+                    <option value={2}>2 - Needs improvement</option>
+                    <option value={1}>1 - Poor</option>
+                  </select>
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-xs font-medium text-slate-700 mb-1">Comment (optional)</label>
+                  <textarea
+                    value={feedbackComment}
+                    onChange={(e) => setFeedbackComment(e.target.value)}
+                    rows={3}
+                    className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    placeholder="Was this note clear and helpful? Any suggestions?"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackModalOpen(false)}
+                    className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-md bg-indigo-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+                  >
+                    Submit feedback
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

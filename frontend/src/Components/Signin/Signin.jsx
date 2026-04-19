@@ -89,11 +89,16 @@ const Signin = () => {
         throw new Error(data.message || 'Invalid credentials');
       }
 
-      // ✅ Store credentials and profile image in localStorage
+      // Store credentials and data in localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('userRole', data.role);
       localStorage.setItem('userId', data._id); 
-      localStorage.setItem('profileImage', data.profileImage || ''); // Ensure Navbar gets the image
+      
+      if (data.profileImage) {
+        localStorage.setItem('profileImage', data.profileImage);
+      } else {
+        localStorage.removeItem('profileImage');
+      }
 
       setIsSuccess(true);
 

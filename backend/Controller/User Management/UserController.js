@@ -1,7 +1,6 @@
 const User = require('../../Model/User Management/UserModel.js');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const transporter = require('../../utils/emailTransporter');
 const nodemailer = require('nodemailer');
 
 // Generate JWT Token
@@ -11,13 +10,33 @@ const generateToken = (id, role) => {
   });
 };
 
-// Setup Nodemailer transporter is handled in backend/utils/emailTransporter.js
+// Setup Nodemailer transporter 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS, 
+  },
+});
 
 // @desc    Register a new user
 // @route   POST /api/auth/signup
 exports.signup = async (req, res) => {
   try {
-    const { fullName, email, phoneNumber, campus, faculty, password, role, profileImage } = req.body;
+    const { fullName, email, phoneNumber, campus, faculty, password, role, profileImage, captchaToken } = req.body;
+
+    if (!captchaToken) {
+      return res.status(400).json({ message: 'CAPTCHA token is missing. Are you a bot?' });
+    }
+
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+    
+    const captchaResponse = await axios.post(verifyUrl);
+
+    if (!captchaResponse.data.success) {
+      return res.status(400).json({ message: 'CAPTCHA verification failed. Please try again.' });
+    }
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -31,9 +50,9 @@ exports.signup = async (req, res) => {
       email,
       phoneNumber,
       campus,
-      faculty,
+      faculty, // Saved to DB
       password,
-      profileImage, // Base64 image saved to DB
+      profileImage,
       role: assignedRole
     });
 
@@ -43,7 +62,7 @@ exports.signup = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        profileImage: user.profileImage, // Sent back so frontend can store it
+        profileImage: user.profileImage,
         token: generateToken(user._id, user.role),
       });
     } else {
@@ -67,7 +86,7 @@ exports.signin = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        profileImage: user.profileImage, // Crucial: Sent on login so Navbar updates
+        profileImage: user.profileImage,
         token: generateToken(user._id, user.role),
       });
     } else {
@@ -103,9 +122,6 @@ exports.updateUser = async (req, res) => {
       user.faculty = req.body.faculty || user.faculty; 
       user.role = req.body.role || user.role; 
       
-      if (req.body.profileImage) {
-        user.profileImage = req.body.profileImage;
-      }
       if (req.body.password) {
         user.password = req.body.password;
       }
@@ -116,7 +132,6 @@ exports.updateUser = async (req, res) => {
         fullName: updatedUser.fullName,
         email: updatedUser.email,
         role: updatedUser.role,
-        profileImage: updatedUser.profileImage,
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -162,6 +177,7 @@ exports.getUserById = async (req, res) => {
 // @route   GET /api/auth/analytics
 exports.getAnalytics = async (req, res) => {
   try {
+    // Only fetch students for the enrollment charts
     const students = await User.find({ role: 'Student' });
 
     const campusCounts = {};

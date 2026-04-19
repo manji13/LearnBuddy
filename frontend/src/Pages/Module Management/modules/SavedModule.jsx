@@ -3,8 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-
-import ProfileNavbar from '../../../Components/NavBar/ProfileNavbar.jsx'
+import Navbar from '../../../Components/NavBar/NavBar.jsx'
 
 const authAxios = () => {
   const token = localStorage.getItem('token')
@@ -18,7 +17,6 @@ export default function MyModules() {
   const [loading,  setLoading]  = useState(true)
   const [removing, setRemoving] = useState(new Set())
   const [search,   setSearch]   = useState('')
-  const [hoveredId, setHoveredId] = useState(null)
 
   // GET /api/saved-modules  returns:
   // { success, count, data: [{ _id, moduleName, moduleNumber, description,
@@ -53,130 +51,165 @@ export default function MyModules() {
     m.faculty?.name?.toLowerCase().includes(search.toLowerCase())
   )
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-50">
-        <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-        <p className="mt-4 text-indigo-600 font-semibold">Loading modules...</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-white">
-  
+    <div className="min-h-screen bg-slate-50 font-sans">
+      <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row gap-6 py-6">
-        {/* Left Sidebar */}
-        <div className="w-full md:w-64 flex-shrink-0 md:sticky md:top-20 md:h-fit">
-          <ProfileNavbar />
+      <div className="max-w-8xl mx-auto p-8">
+
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+          <Link to="/student/faculties" className="hover:text-blue-600 transition-colors">Faculties</Link>
+          <span>/</span>
+          <span className="text-gray-700 font-medium">My Modules</span>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 w-full">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">📌 My Saved Modules</h1>
-                <p className="text-sm text-gray-500 mt-1">Your personal collection</p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-indigo-600">{modules.length}</p>
-                <p className="text-xs text-gray-500">Saved modules</p>
-              </div>
-            </div>
+        {/* Header */}
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+          <div>
+            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-widest mb-1">Personal Collection</p>
+            <h1 className="text-3xl font-bold text-gray-900">📌 My Modules</h1>
+            <p className="text-sm text-gray-500 mt-1">Modules you've saved — only visible to you</p>
+          </div>
+        </div>
 
-            {/* Search */}
-            <div className="relative">
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search modules..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              />
+        {/* Stats + Search */}
+        {!loading && modules.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-2">
+                <span className="text-xs text-indigo-400">Saved modules</span>
+                <p className="text-xl font-bold text-indigo-700 leading-tight">{modules.length}</p>
+              </div>
+              {search && filtered.length !== modules.length && (
+                <div className="bg-white border border-gray-200 rounded-xl px-4 py-2">
+                  <span className="text-xs text-gray-400">Matching</span>
+                  <p className="text-xl font-bold text-gray-900 leading-tight">{filtered.length}</p>
+                </div>
+              )}
             </div>
+            <input
+              className="w-full max-w-xs px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
+              placeholder="Search saved modules..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* Content */}
+        {loading ? (
+          <div className="flex items-center justify-center py-24 gap-3 text-sm text-gray-400">
+            <div className="w-5 h-5 border-2 border-gray-200 border-t-indigo-500 rounded-full animate-spin" />
+            Loading your modules...
           </div>
 
-          {/* Content */}
-          {modules.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-3">📚</div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-1">No saved modules</h3>
-              <p className="text-sm text-gray-500 mb-4">Start saving modules to see them here</p>
-              <Link
-                to="/student/faculties"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                Browse Faculties
-              </Link>
+        ) : modules.length === 0 ? (
+          <div className="flex flex-col items-center py-24 gap-4 text-center">
+            <div className="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center text-4xl">
+              📌
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No modules match your search</p>
-              <button onClick={() => setSearch('')} className="text-indigo-600 text-sm hover:underline mt-2">
-                Clear search
-              </button>
+            <div>
+              <p className="font-semibold text-gray-700 text-lg">No saved modules yet</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Browse your courses and save modules to find them here quickly
+              </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.map((module) => (
+            <Link
+              to="/student/faculties"
+              className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
+            >
+              Browse Faculties
+            </Link>
+          </div>
+
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center py-20 gap-3 text-center">
+            <span className="text-5xl">🔍</span>
+            <p className="font-semibold text-gray-600">No modules match your search</p>
+            <button onClick={() => setSearch('')} className="text-sm text-indigo-600 hover:underline">
+              Clear search
+            </button>
+          </div>
+
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map((module) => {
+              const isRemoving = removing.has(module._id)
+
+              return (
                 <div
                   key={module._id}
                   onClick={() => navigate(`/student/modules/${module._id}`)}
-                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-indigo-300 transition-all cursor-pointer group"
+                  className="relative bg-white rounded-2xl border border-indigo-100 ring-1 ring-indigo-50 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer overflow-hidden"
                 >
-                  {/* Top badges */}
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="flex gap-2 flex-wrap">
-                      {module.moduleNumber && (
-                        <span className="text-xs font-semibold bg-amber-50 text-amber-700 px-2 py-1 rounded border border-amber-200">
+                  {/* top accent */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-indigo-500 rounded-t-2xl" />
+
+                  <div className="p-5 pt-6">
+                    {/* Badges + Remove button */}
+                    <div className="flex items-start justify-between mb-3 gap-2">
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
                           {module.moduleNumber}
                         </span>
-                      )}
-                      {module.faculty && (
-                        <span className="text-xs font-medium bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                          {module.faculty.code}
-                        </span>
-                      )}
+                        {module.faculty && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+                            {module.faculty.code ?? module.faculty.name}
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={(e) => unsave(e, module._id)}
+                        disabled={isRemoving}
+                        title="Remove from My Modules"
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all shrink-0
+                          bg-indigo-100 text-indigo-700 hover:bg-red-50 hover:text-red-600
+                          ${isRemoving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {isRemoving
+                          ? <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" />
+                          : '📌'
+                        }
+                        {isRemoving ? 'Removing…' : 'Remove'}
+                      </button>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        unsave(e, module._id)
-                      }}
-                      disabled={removing.has(module._id)}
-                      className="text-xs font-medium px-2 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
-                    >
-                      {removing.has(module._id) ? '...' : '✕'}
-                    </button>
-                  </div>
 
-                  {/* Title */}
-                  <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 group-hover:text-indigo-600 transition-colors mb-2">
-                    {module.moduleName}
-                  </h3>
+                    {/* Name */}
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                      {module.moduleName}
+                    </h3>
 
-                  {/* Description */}
-                  <p className="text-xs text-gray-600 line-clamp-2 mb-3">
-                    {module.description || <span className="text-gray-400">No description</span>}
-                  </p>
+                    {/* Description */}
+                    <p className="text-sm text-gray-500 line-clamp-3">
+                      {module.description || <span className="text-gray-300">No description</span>}
+                    </p>
 
-                  {/* Footer */}
-                  <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 pt-2">
-                    {module.semester && (
-                      <span>Y{module.semester.year} • S{module.semester.semester}</span>
-                    )}
-                    <span className="text-indigo-600 font-medium">View →</span>
+                    {/* Semester + arrow */}
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                      {module.semester ? (
+                        <span className="text-xs text-gray-400">
+                          Year {module.semester.year} · Sem {module.semester.semester}
+                        </span>
+                      ) : <span />}
+                      <span className="text-indigo-500 text-sm font-medium">View details →</span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              )
+            })}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-10">
+          <Link
+            to="/student/faculties"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-sm font-medium text-gray-700 rounded-xl hover:bg-gray-50 shadow-sm transition-colors"
+          >
+            ← Browse More Modules
+          </Link>
         </div>
       </div>
     </div>

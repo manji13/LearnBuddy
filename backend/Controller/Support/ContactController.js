@@ -1,16 +1,15 @@
-const transporter = require('../../utils/emailTransporter');
+const nodemailer = require('nodemailer');
 
 exports.submitContactForm = async (req, res) => {
   try {
-    // 1. Update the destructured fields to match the frontend
-    const { name, email, subject, message } = req.body;
+    const { name, phone, description } = req.body;
 
-    // 2. Update Backend Validation
-    if (!name || !email || !subject || !message) {
+    // Backend Validation
+    if (!name || !phone || !description) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
 
-    // Send the email TO your system email, containing the student's details
+    // Setup Nodemailer transporter (Using existing LearnBuddy Email setup)
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -19,11 +18,11 @@ exports.submitContactForm = async (req, res) => {
       },
     });
 
-    // 3. Update the email HTML to show the new fields
+    // Send the email TO your system email, containing the student's details
     const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
-      subject: `LearnBuddy Contact Us: ${subject} from ${name}`, // Added subject here
+      from: process.env.EMAIL_USER, // It must be sent from your authenticated email
+      to: process.env.EMAIL_USER,   // Sending it TO yourself (the LearnBuddy System)
+      subject: `LearnBuddy Contact Us: New Message from ${name}`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
           <h2 style="color: #4F46E5;">New Contact Submission</h2>
@@ -31,12 +30,11 @@ exports.submitContactForm = async (req, res) => {
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
           
           <p><strong>Student Name:</strong> ${name}</p>
-          <p><strong>Email Address:</strong> ${email}</p>
-          <p><strong>Subject:</strong> ${subject}</p>
+          <p><strong>Phone Number:</strong> ${phone}</p>
           
-          <h4 style="margin-bottom: 5px;">Message:</h4>
+          <h4 style="margin-bottom: 5px;">Description:</h4>
           <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #14b8a6; border-radius: 4px;">
-            ${message}
+            ${description}
           </div>
           
           <p style="margin-top: 30px; font-size: 12px; color: #888;">This is an automated message from the LearnBuddy System.</p>
