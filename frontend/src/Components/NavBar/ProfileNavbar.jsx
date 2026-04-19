@@ -63,16 +63,6 @@ const ProfileSidebar = () => {
 
         <nav className="flex flex-col gap-2 flex-grow overflow-y-auto">
           <NavItem 
-            to="/student-dashboard" 
-            label="Home" 
-            icon={
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9m-9 4v4m4-4v4m-5-10l.586-.586a2 2 0 112.828 0L17 11m-5-2V6a1 1 0 011-1h2a1 1 0 011 1v2m-6 0V6a1 1 0 011-1h2a1 1 0 011 1v2" />
-              </svg>
-            } 
-          />
-
-          <NavItem 
             to="/profile" 
             label="My Profile" 
             icon={
