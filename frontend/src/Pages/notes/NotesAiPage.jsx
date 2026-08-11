@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NoteInteraction from '../../Components/Interaction/NoteInteraction';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function NotesAiPage() {
   const [form, setForm] = useState({
@@ -107,6 +107,7 @@ function NotesAiPage() {
   // Read user role from localStorage to control upload/delete visibility and admin dropdowns
   useEffect(() => {
     const role = localStorage.getItem('userRole');
+    console.log('User role from localStorage:', role); // Debug log
     setUserRole(role);
   }, []);
 
@@ -710,7 +711,7 @@ function NotesAiPage() {
                         >
                           Download
                         </button>
-                        {isAdminRoute && (userRole === 'Employee' || userRole === 'Admin') ? (
+                        {isAdminRoute ? (
                           <>
                             {note.status === 'pending' && (
                               <button
@@ -719,9 +720,10 @@ function NotesAiPage() {
                                   try {
                                     await axios.patch(`${API_BASE_URL}/api/notes/${note._id}/approve`);
                                     setSuccess('Note approved successfully');
-                                    await fetchNotes();
+                                    // Refresh the list
+                                    await fetchNotes(form.moduleName || undefined);
                                   } catch (approveErr) {
-                                    console.error(approveErr);
+                                    console.error('Approve error:', approveErr);
                                     setError(
                                       approveErr.response?.data?.message || 'Failed to approve note',
                                     );

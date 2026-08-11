@@ -128,7 +128,9 @@ const downloadPastPaper = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Past paper not found' });
     }
 
-    const filePath = path.join(__dirname, '..', '..', pastPaper.fileUrl);
+    // Construct the absolute path to the file
+    const backendDir = path.resolve(__dirname, '..', '..');
+    const filePath = path.join(backendDir, pastPaper.fileUrl);
 
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ success: false, message: 'File not found on server' });
@@ -150,7 +152,9 @@ const deletePastPaper = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Past paper not found' });
     }
 
-    const filePath = path.join(__dirname, '..', '..', pastPaper.fileUrl);
+    // Construct the absolute path to the file
+    const backendDir = path.resolve(__dirname, '..', '..');
+    const filePath = path.join(backendDir, pastPaper.fileUrl);
 
     if (fs.existsSync(filePath)) {
       fs.unlink(filePath, (err) => {

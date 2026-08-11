@@ -11,13 +11,7 @@ exports.submitContactForm = async (req, res) => {
     }
 
     // Send the email TO your system email, containing the student's details
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS, 
-      },
-    });
+    // Use the imported transporter instance (already configured in emailTransporter.js)
 
     // 3. Update the email HTML to show the new fields
     const mailOptions = {
