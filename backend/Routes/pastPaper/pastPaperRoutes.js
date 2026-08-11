@@ -26,23 +26,26 @@ router.post('/upload-student', (req, res) => {
   });
 });
 
-router.get('/', pastPaperController.getAllPastPapers);
+// Specific routes (must come BEFORE generic :id routes)
 router.get('/search', pastPaperController.searchPastPapers);
 router.get('/download/:id', pastPaperController.downloadPastPaper);
-router.delete('/:id', pastPaperController.deletePastPaper);
 
-// Approval for student-submitted past papers
-router.patch('/:id/approve', pastPaperController.approvePastPaper);
-
-// AI QA generation
+// AI QA generation (before generic :id routes)
 router.post('/generate-qa/:id', qaController.generateQAFromPDF);
 
-// AI exam difficulty analysis
+// AI exam difficulty analysis (before generic :id routes)
 router.post('/analyse-exam/:id', examAnalysisController.analyseExamFromPDF);
 
-// Quiz results (per student)
+// Quiz results (specific routes)
 router.post('/quiz-results', quizResultController.createQuizResult);
 router.get('/quiz-results', quizResultController.getUserQuizResults);
 router.get('/weak-areas', quizResultController.getWeakAreas);
+
+// Approval for student-submitted past papers (after /quiz-results, before generic :id)
+router.patch('/:id/approve', pastPaperController.approvePastPaper);
+
+// Generic :id routes (must come LAST)
+router.get('/', pastPaperController.getAllPastPapers);
+router.delete('/:id', pastPaperController.deletePastPaper);
 
 module.exports = router;

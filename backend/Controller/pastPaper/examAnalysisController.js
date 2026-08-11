@@ -17,8 +17,16 @@ exports.analyseExamFromPDF = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Past paper not found' });
     }
 
-    const filePath = path.join(__dirname, '..', '..', pastPaper.fileUrl);
+    // Construct the absolute path to the file
+    // __dirname is /backend/Controller/pastPaper, so go up 2 levels to get /backend
+    const backendDir = path.resolve(__dirname, '..', '..');
+    const filePath = path.join(backendDir, pastPaper.fileUrl);
+
+    console.log('Looking for file at:', filePath);
+    console.log('File exists:', fs.existsSync(filePath));
+
     if (!fs.existsSync(filePath)) {
+      console.error('File not found. Stored path:', pastPaper.fileUrl);
       return res.status(404).json({ success: false, message: 'File not found on server' });
     }
 
